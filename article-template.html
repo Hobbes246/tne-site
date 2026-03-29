@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ARTICLE_TITLE}} — The Network Exposed</title>
+<meta name="description" content="{{ARTICLE_LEDE}}">
+<link rel="canonical" href="https://thenetworkexposed.org/articles/{{ARTICLE_SLUG}}.html">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+
+<meta property="og:title" content="{{ARTICLE_TITLE}}">
+<meta property="og:description" content="{{ARTICLE_LEDE}}">
+<meta property="og:url" content="https://thenetworkexposed.org/articles/{{ARTICLE_SLUG}}.html">
+<meta property="og:site_name" content="The Network Exposed">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=IBM+Plex+Mono:wght@300;400;500&family=Newsreader:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --black: #080808;
+  --off-black: #0f0f0f;
+  --dark: #161616;
+  --border: #2a2a2a;
+  --red: #c0392b;
+  --red-light: #e74c3c;
+  --white: #f0ede8;
+  --muted: #999;
+  --warm-gray: #c0bbb3;
+  --gold: #c9a84c;
+  --blue: #3498db;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--black);
+  color: var(--white);
+  font-family: 'Newsreader', Georgia, serif;
+  overflow-x: hidden;
+}
+
+/* NAV */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 48px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(8,8,8,0.97);
+  backdrop-filter: blur(10px);
+}
+nav .logo {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--red-light);
+  font-weight: 500;
+  text-decoration: none;
+}
+nav ul { display: flex; list-style: none; gap: 36px; }
+nav ul a {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+nav ul a:hover { color: var(--white); }
+
+/* ARTICLE */
+.article-wrapper {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 140px 48px 100px;
+}
+
+.article-meta {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--red-light);
+  margin-bottom: 24px;
+}
+
+.article-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: clamp(28px, 4vw, 48px);
+  font-weight: 900;
+  line-height: 1.15;
+  color: var(--white);
+  margin-bottom: 28px;
+}
+
+.article-lede {
+  font-size: 1.2rem;
+  line-height: 1.65;
+  color: var(--warm-gray);
+  font-style: italic;
+  border-left: 3px solid var(--red);
+  padding-left: 24px;
+  margin-bottom: 48px;
+}
+
+.article-divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 48px 0;
+}
+
+.article-body {
+  font-size: 1.05rem;
+  line-height: 1.8;
+  color: var(--white);
+}
+
+.article-body p {
+  margin-bottom: 24px;
+}
+
+.article-body h2 {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--white);
+  margin: 48px 0 20px;
+}
+
+.article-body h3 {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--red-light);
+  margin: 36px 0 16px;
+}
+
+.unconfirmed-box {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--gold);
+  padding: 20px 24px;
+  margin: 36px 0;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--warm-gray);
+}
+
+.unconfirmed-box strong {
+  color: var(--gold);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  display: block;
+  margin-bottom: 8px;
+  font-size: 10px;
+}
+
+.article-footer {
+  margin-top: 64px;
+  padding-top: 32px;
+  border-top: 1px solid var(--border);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+/* ARTICLES INDEX LINK */
+.back-link {
+  display: inline-block;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-decoration: none;
+  margin-bottom: 48px;
+  transition: color 0.2s;
+}
+.back-link:hover { color: var(--white); }
+.back-link::before { content: '← '; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="logo">The Network Exposed</a>
+  <ul>
+    <li><a href="/">Map</a></li>
+    <li><a href="/index.html#investigations">Investigations</a></li>
+    <li><a href="/articles.html">Articles</a></li>
+    <li><a href="/epic-fury.html">Epic Fury</a></li>
+  </ul>
+</nav>
+
+<div class="article-wrapper">
+  <a href="/articles.html" class="back-link">All Articles</a>
+
+  <div class="article-meta">{{ARTICLE_DATE}} · The Network Exposed · TNE Agent Draft</div>
+
+  <h1 class="article-title">{{ARTICLE_TITLE}}</h1>
+
+  <p class="article-lede">{{ARTICLE_LEDE}}</p>
+
+  <hr class="article-divider">
+
+  <div class="article-body">
+    {{ARTICLE_BODY}}
+  </div>
+
+  <div class="article-footer">
+    Drafted by TNE Agent · {{ARTICLE_DATE}} · For review before publication
+  </div>
+</div>
+
+</body>
+</html>

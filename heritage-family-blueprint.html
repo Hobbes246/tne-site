@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Heritage Foundation's Family Blueprint — The Network Exposed Analysis</title>
+<meta name="description" content="Full analysis of Heritage Foundation Special Report No. 323: 'Saving America by Saving the Family' — the post-Project 2025 blueprint targeting marriage, reproduction, and women's autonomy.">
+<meta name="keywords" content="Heritage Foundation, Saving America by Saving the Family, Project 2025, Christian nationalism, anti-women, pro-natalism, Roger Severino, Kevin Roberts, family policy, welfare reform">
+<link rel="canonical" href="https://thenetworkexposed.org/heritage-family-blueprint.html">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+
+<meta property="og:title" content="Heritage's Next Blueprint: Saving America by Saving the Family — Analysis">
+<meta property="og:description" content="A 164-page post-Project 2025 agenda targeting single mothers, LGBTQ+ families, women's autonomy, and reproductive rights. Full documented analysis.">
+<meta property="og:url" content="https://thenetworkexposed.org/heritage-family-blueprint.html">
+<meta property="og:site_name" content="The Network Exposed">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=IBM+Plex+Mono:wght@300;400;500&family=Newsreader:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --black: #080808;
+  --off-black: #0f0f0f;
+  --dark: #161616;
+  --border: #2a2a2a;
+  --red: #c0392b;
+  --red-light: #e74c3c;
+  --white: #f0ede8;
+  --muted: #888;
+  --warm-gray: #b8b3ab;
+  --gold: #c9a84c;
+  --gold-light: #d4b86a;
+  --blue: #3498db;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--black);
+  color: var(--white);
+  font-family: 'Newsreader', Georgia, serif;
+  overflow-x: hidden;
+}
+
+/* NAV */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 48px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(8,8,8,0.97);
+  backdrop-filter: blur(10px);
+}
+.nav-logo {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--red-light);
+  font-weight: 500;
+  text-decoration: none;
+}
+.nav-back {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.nav-back:hover { color: var(--white); }
+
+/* HERO */
+#hero {
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 120px 48px 60px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+}
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, transparent 40%, var(--black) 100%),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 80px,
+      rgba(192,57,43,0.03) 80px,
+      rgba(192,57,43,0.03) 81px
+    );
+}
+.report-flag {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--red-light);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  position: relative;
+}
+.report-flag::before {
+  content: '';
+  display: block;
+  width: 32px;
+  height: 1px;
+  background: var(--red-light);
+}
+.hero-kicker {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 20px;
+  position: relative;
+}
+#hero h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(36px, 5vw, 72px);
+  font-weight: 900;
+  line-height: 1.0;
+  letter-spacing: -1px;
+  margin-bottom: 8px;
+  position: relative;
+  max-width: 900px;
+}
+#hero h1 em { font-style: italic; color: var(--red-light); }
+.hero-subtitle {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: clamp(18px, 2.5vw, 28px);
+  color: var(--warm-gray);
+  margin-bottom: 36px;
+  position: relative;
+  max-width: 800px;
+  line-height: 1.4;
+}
+.hero-meta-bar {
+  display: flex;
+  gap: 40px;
+  flex-wrap: wrap;
+  position: relative;
+  border-top: 1px solid var(--border);
+  padding-top: 24px;
+}
+.meta-item label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: block;
+  margin-bottom: 5px;
+}
+.meta-item span {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  color: var(--warm-gray);
+}
+
+/* WARNING BANNER */
+.warning-banner {
+  background: rgba(192,57,43,0.12);
+  border-left: 4px solid var(--red);
+  border-bottom: 1px solid rgba(192,57,43,0.2);
+  padding: 20px 48px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--warm-gray);
+}
+.warning-banner strong { color: var(--red-light); }
+
+/* ARTICLE LAYOUT */
+.article-body {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 0;
+  border-bottom: 1px solid var(--border);
+}
+.article-main {
+  padding: 72px 60px 72px 48px;
+  border-right: 1px solid var(--border);
+}
+.article-sidebar {
+  padding: 72px 40px;
+  position: sticky;
+  top: 60px;
+  align-self: start;
+}
+
+/* SECTION HEADINGS */
+.section-marker {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--red-light);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.section-marker::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+.article-main h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 24px;
+  margin-top: 56px;
+}
+.article-main h2:first-child { margin-top: 0; }
+.article-main h3 {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  letter-spacing: 1px;
+  color: var(--gold);
+  margin-bottom: 14px;
+  margin-top: 36px;
+  text-transform: uppercase;
+}
+.article-main p {
+  font-size: 18px;
+  line-height: 1.9;
+  color: var(--warm-gray);
+  margin-bottom: 22px;
+}
+.article-main p strong { color: var(--white); font-weight: 400; }
+.article-main p em { color: var(--gold-light); font-style: italic; }
+
+/* PULL QUOTE */
+.pull-quote {
+  border-left: 3px solid var(--red-light);
+  padding: 20px 0 20px 28px;
+  margin: 36px 0;
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: 22px;
+  line-height: 1.5;
+  color: var(--white);
+}
+.pull-quote cite {
+  display: block;
+  margin-top: 12px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: var(--muted);
+  font-style: normal;
+}
+
+/* POLICY BOXES */
+.policy-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  margin: 32px 0;
+}
+.policy-card {
+  background: var(--off-black);
+  padding: 28px 24px;
+}
+.policy-card h4 {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 12px;
+}
+.policy-card p {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--muted);
+  margin-bottom: 0;
+}
+
+/* WHAT IT REALLY MEANS BOX */
+.analysis-box {
+  background: rgba(192,57,43,0.08);
+  border: 1px solid rgba(192,57,43,0.25);
+  border-left: 3px solid var(--red);
+  padding: 28px 32px;
+  margin: 32px 0;
+}
+.analysis-box .analysis-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--red-light);
+  margin-bottom: 14px;
+}
+.analysis-box p {
+  font-size: 16px;
+  line-height: 1.8;
+  color: var(--warm-gray);
+  margin-bottom: 12px;
+}
+.analysis-box p:last-child { margin-bottom: 0; }
+
+/* CONNECTIONS BOX */
+.connections-box {
+  border: 1px solid var(--border);
+  padding: 28px;
+  margin: 32px 0;
+}
+.connections-box h4 {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 20px;
+}
+.conn-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.conn-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.conn-node {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  padding: 3px 10px;
+  border: 1px solid var(--border);
+  color: var(--gold);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.conn-desc {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+/* SIDEBAR */
+.sidebar-toc h4 {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 20px;
+}
+.toc-item {
+  display: block;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  text-decoration: none;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  letter-spacing: 0.5px;
+  transition: color 0.2s;
+  line-height: 1.5;
+}
+.toc-item:hover { color: var(--white); }
+.toc-item:last-child { border-bottom: none; }
+
+.sidebar-sources {
+  margin-top: 48px;
+}
+.sidebar-sources h4 {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+.source-link {
+  display: block;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+  text-decoration: none;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+  transition: color 0.2s;
+  line-height: 1.5;
+}
+.source-link:hover { color: var(--red-light); }
+.source-link:last-child { border-bottom: none; }
+
+.map-cta {
+  margin-top: 48px;
+  background: rgba(192,57,43,0.1);
+  border: 1px solid rgba(192,57,43,0.25);
+  padding: 24px;
+}
+.map-cta p {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--warm-gray);
+  line-height: 1.7;
+  margin-bottom: 16px;
+}
+.map-cta a {
+  display: block;
+  background: var(--red);
+  color: var(--white);
+  text-align: center;
+  padding: 12px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+.map-cta a:hover { background: var(--red-light); }
+
+/* FOOTER */
+footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 32px 48px;
+  border-top: 1px solid var(--border);
+}
+footer .logo {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--red-light);
+}
+footer p {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+@media (max-width: 900px) {
+  .article-body { grid-template-columns: 1fr; }
+  .article-sidebar { display: none; }
+  nav, #hero, .article-main, footer { padding-left: 20px; padding-right: 20px; }
+  .policy-grid { grid-template-columns: 1fr; }
+  .warning-banner { padding-left: 20px; padding-right: 20px; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="index.html">The Network Exposed</a>
+  <a class="nav-back" href="index.html#map-section">← Back to the Map</a>
+</nav>
+
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="report-flag">Investigation · Heritage Foundation · January 2026</div>
+  <div class="hero-kicker">Special Report No. 323 — Full Analysis</div>
+  <h1>The Next<br><em>Blueprint</em></h1>
+  <div class="hero-subtitle">"Saving America by Saving the Family: A Foundation for the Next 250 Years" — Heritage Foundation's post-Project 2025 agenda targeting marriage, reproduction, single mothers, and women's autonomy.</div>
+  <div class="hero-meta-bar">
+    <div class="meta-item"><label>Published</label><span>January 8, 2026</span></div>
+    <div class="meta-item"><label>Length</label><span>164 pages</span></div>
+    <div class="meta-item"><label>Authors</label><span>Severino, Richards, Waters, Squires, Sheffield, Rector</span></div>
+    <div class="meta-item"><label>Status</label><span>Kevin Roberts: Admin "will be amenable"</span></div>
+  </div>
+</section>
+
+<div class="warning-banner">
+  <strong>Note on sourcing:</strong> All quotes, proposals, and characterizations in this analysis are drawn directly from Heritage Foundation Special Report No. 323 (January 8, 2026), publicly available at heritage.org, and from Heritage's own press releases and statements. This is what they say, in their own words.
+</div>
+
+<div class="article-body">
+  <div class="article-main">
+
+    <div class="section-marker">What This Document Is</div>
+    <h2>Project 2025 Is Already Being Implemented. This Is What Comes Next.</h2>
+    <p>Eight days into the second Trump administration, the Heritage Foundation released a 164-page policy blueprint titled <em>"Saving America by Saving the Family: A Foundation for the Next 250 Years."</em> Heritage President Kevin Roberts told reporters he was <strong>"pretty confident the Trump administration will be amenable"</strong> to its proposals — the same language used to describe Project 2025 before it became executive policy.</p>
+    <p>This is not a think piece. It is an implementation document. It tells the administration what to do next, after the first wave of Project 2025 executive orders — specifically targeting family structure, reproduction, welfare access for single mothers, and the legal definition of marriage.</p>
+
+    <div class="pull-quote">
+      "Government must choose a side. It must stop being hostile or indifferent to marriage and family, and become fully supportive in all it does — from rhetoric, to law, to programs, grants, to regulations."
+      <cite>— Roger Severino, Heritage VP, former HHS Civil Rights Director</cite>
+    </div>
+
+    <div class="section-marker">The Core Argument</div>
+    <h2>A Demographic Crisis — Framed as a Civilizational Emergency</h2>
+    <p>The report's opening argument is genuinely alarming in its framing: America is dying because its citizens have stopped marrying and having children. The fertility rate is 1.59 — below the 2.1 replacement threshold. Marriage rates have declined steadily since the 1960s. Within a decade, deaths will outpace births.</p>
+    <p>These statistics are largely accurate. What Heritage does with them is the problem.</p>
+    <p>The report assigns two causes for demographic decline: <strong>the 1960s welfare state</strong> (which they claim paid women to have children outside marriage) and <strong>second-wave feminism and the sexual revolution</strong> (which normalized abortion, no-fault divorce, childlessness by choice, and women's economic independence). The LGBTQ movement is named as a third force that "redefined marriage and severed it from its reproductive function."</p>
+    <p>The solution is equally explicit: <strong>government must actively enforce the traditional family structure</strong> — one man, one woman, married, with children — as the singular valid form of family organization, using tax policy, welfare cuts, and cultural pressure to make all other arrangements economically and socially unviable.</p>
+
+    <div class="analysis-box">
+      <div class="analysis-label">What This Actually Means</div>
+      <p>The report frames the problem as demographic and the solution as policy — but the underlying logic is purely ideological. Countries with progressive family policies (Scandinavia) have higher birth rates than countries with restrictive ones. The demographic crisis is real; Heritage's diagnosis of its causes is not supported by comparative evidence.</p>
+      <p>What Heritage is actually proposing is not a birth rate fix. It is a rollback of 60 years of women's economic independence, dressed in the language of national survival.</p>
+    </div>
+
+    <div class="section-marker">The Three-Part Policy Agenda</div>
+    <h2>What They Are Actually Proposing</h2>
+
+    <h3>Pillar One — "Stop Punishing Family Formation"</h3>
+    <p>This section targets the welfare state, arguing that benefits paid to single-parent households make marriage "economically irrational" for low-income women and must be eliminated or restructured to flow only to married couples.</p>
+
+    <div class="policy-grid">
+      <div class="policy-card">
+        <h4>Welfare Cuts to Single Mothers</h4>
+        <p>All cash, food, and housing programs currently weighted toward single-parent families must be restructured so that married couples receive maximum benefits and single parents receive reduced or eliminated benefits. The report frames single-mother household subsidies as "perverse incentives."</p>
+      </div>
+      <div class="policy-card">
+        <h4>Work Requirements</h4>
+        <p>Impose mandatory work requirements on all welfare recipients. Combined with benefit cuts to single parents, this is a structural pressure campaign to force marriage as the only viable path to economic stability for low-income women.</p>
+      </div>
+      <div class="policy-card">
+        <h4>Eliminate "Marriage Penalties"</h4>
+        <p>Remove all tax and benefit structures that treat married and unmarried households equally. Any program that does not actively reward marriage over non-marriage is framed as a "penalty" on marriage.</p>
+      </div>
+      <div class="policy-card">
+        <h4>Redefine "Family" in Federal Law</h4>
+        <p>The explicit policy goal is that every federal regulation, program, and agency use the traditional definition of family — one man, one woman, married, with children — as the default unit of policy analysis.</p>
+      </div>
+    </div>
+
+    <h3>Pillar Two — "Restore the American Dream"</h3>
+    <p>This section proposes new financial incentives exclusively for married, heterosexual families with children — explicitly designed so single mothers receive nothing.</p>
+    <p>Key proposals include <strong>NEST accounts</strong> — new investment accounts for newborns that the report explicitly parallels to Trump's "baby bond" executive actions — and a restructured Child Tax Credit that doubles for married couples. The report explicitly states that its refusal to make these benefits available to unmarried parents is <strong>intentional</strong>, not an oversight. Single mothers are excluded by design to create economic pressure toward marriage.</p>
+
+    <div class="analysis-box">
+      <div class="analysis-label">Who Gets Hurt</div>
+      <p>The United States has the <strong>highest single-parent household rate in the developed world</strong> — approximately 25% of children live with one parent. The overwhelming majority are low-income. The vast majority of those single parents are women. A significant percentage became single parents through divorce, domestic violence, or abandonment — not "choice."</p>
+      <p>Heritage's proposal would remove or reduce economic support for roughly one in four American children in order to financially punish their mothers for not being married. This is not family policy. It is economic coercion of women into marriage.</p>
+    </div>
+
+    <h3>Pillar Three — "Support Marriage and Working Families"</h3>
+    <p>The final pillar focuses on redirecting existing childcare subsidies away from working mothers and toward stay-at-home wives, and launching a government-sponsored cultural campaign to "revive marriage."</p>
+    <p>The report calls for extending the Child and Dependent Care Tax Credit to stay-at-home parents — which sounds neutral until you recognize its purpose: to make the financial calculus favor a wife leaving the workforce over a wife working, by subsidizing her unpaid domestic labor while reducing support for her paid childcare.</p>
+    <p>Most significantly, the report calls for a <strong>"culture-wide Manhattan Project"</strong> — their exact language — to restore traditional family structure. This means deploying government, schools, civic institutions, media, and religious organizations in a coordinated campaign to stigmatize all family formations other than the traditional heterosexual married household.</p>
+
+    <div class="pull-quote">
+      "A problem of this magnitude requires a culture-wide Manhattan Project that marshals America's political, social, and economic capital to restore the natural family."
+      <cite>— Heritage Foundation Special Report No. 323, January 2026</cite>
+    </div>
+
+    <div class="section-marker">What It Doesn't Say But Clearly Means</div>
+    <h2>Reading Between the Lines</h2>
+
+    <h3>On Abortion</h3>
+    <p>The word "abortion" appears throughout the report as a cause of demographic decline and a symptom of cultural collapse. The report states that "the stability created by marriage naturally increases the birth rate and <strong>reduces the abortion rate</strong>" — embedding abortion opposition directly into its demographic argument. Cutting welfare to single mothers while restricting abortion access is not coincidental. It is a two-pronged trap.</p>
+
+    <h3>On LGBTQ+ Families</h3>
+    <p>The report defines marriage exclusively as "the committed union of one man and one woman" on its first page and never wavers. Every policy proposal flows from this definition. Same-sex married couples are excluded from all proposed benefits. The report explicitly blames the Supreme Court's marriage equality decision for severing marriage "from its natural biological function and purpose of reproduction." The legal infrastructure for reversing Obergefell is not mentioned here — that's ADF's job — but this report is the policy framework that would follow.</p>
+
+    <h3>On Women's Economic Independence</h3>
+    <p>The report names "second-wave feminism" as a root cause of demographic collapse alongside the welfare state. The sexual revolution's promise of "liberation" is described as having led to "casual sex, abortion, childlessness by choice, and no-fault divorce" becoming normalized. The subtext is explicit: women's economic independence, reproductive autonomy, and legal ability to leave marriages are presented as civilizational threats.</p>
+
+    <h3>The Techno-Natalist Split</h3>
+    <p>The report explicitly <strong>rejects</strong> the Musk/Thiel techno-natalist approach — IVF, surrogacy, artificial wombs, egg freezing. Heritage calls this approach a babies-at-all-costs mentality that "treats children as consumer goods." This is a meaningful internal split on the right: Heritage wants more babies inside heterosexual Christian marriage; the Silicon Valley techno-authoritarian wing wants more babies by any technological means available. Same demographic anxiety, fundamentally incompatible solutions.</p>
+
+    <div class="section-marker">Who Wrote This and Why It Matters</div>
+    <h2>The Authors and Their Network</h2>
+    <p><strong>Roger Severino</strong> — lead author — was the Director of the HHS Office for Civil Rights under Trump's first term, where he systematically weaponized civil rights law against LGBTQ+ people and enabled healthcare providers to refuse care on religious grounds. He is now Heritage's VP for Economic and Domestic Policy and is the primary architect of this blueprint.</p>
+    <p><strong>Robert Rector</strong> is Heritage's longtime welfare researcher who has spent 40 years arguing that welfare causes poverty by enabling single motherhood. His work directly influenced the 1996 welfare reform law. He is the intellectual architect of the "welfare causes single-parent families" argument that underlies all of Pillar One.</p>
+    <p><strong>Jay Richards</strong> is Heritage's VP for Social and Domestic Policy and a prominent Catholic intellectual who has written extensively about natural law, the theology of the body, and gender ideology. His presence signals that this is not merely a policy document — it is a theological one.</p>
+
+    <div class="connections-box">
+      <h4>Network Connections — How This Fits the Larger Map</h4>
+      <div class="conn-row">
+        <span class="conn-node">Heritage → Focus on the Family</span>
+        <div class="conn-desc">Focus on the Family (Dobson) praised the report as reflecting their founding mission. The Dobson Institute called it aligned with their 1986 White House Family report — Heritage is formalizing a 40-year evangelical agenda.</div>
+      </div>
+      <div class="conn-row">
+        <span class="conn-node">Heritage → ADF</span>
+        <div class="conn-desc">Alliance Defending Freedom provides the legal infrastructure for Heritage's marriage definition. ADF is already litigating to restrict same-sex marriage benefits; this report provides the policy framework for what follows an ADF legal victory.</div>
+      </div>
+      <div class="conn-row">
+        <span class="conn-node">Heritage → Vought/CRA</span>
+        <div class="conn-desc">Russell Vought's OMB is the implementation mechanism. The Center for Renewing America has already drafted executive orders embedding fetal personhood in federal agencies — the family policy proposals here are the next wave.</div>
+      </div>
+      <div class="conn-row">
+        <span class="conn-node">Heritage → NAR</span>
+        <div class="conn-desc">The Seven Mountain Mandate calls for Christian dominion over the "family mountain" of society. Heritage's blueprint is the secular-policy expression of that theological goal — government enforcement of NAR's vision of family structure.</div>
+      </div>
+      <div class="conn-row">
+        <span class="conn-node">Heritage → Moms for Liberty</span>
+        <div class="conn-desc">The "culture-wide Manhattan Project" requires a ground game. Moms for Liberty's school board capture is the local implementation mechanism for Heritage's cultural agenda — embedding traditional family values into public education.</div>
+      </div>
+    </div>
+
+    <div class="section-marker">Bottom Line</div>
+    <h2>What This Document Represents</h2>
+    <p>This report is Heritage's opening bid in a post-Project 2025 legislative campaign. Project 2025 reorganized the executive branch. This report is the agenda for what that reorganized executive branch does next — specifically targeting the social and economic infrastructure that allows women to live independently of traditional marriage.</p>
+    <p>The stated goal is reversing demographic decline. The actual mechanism is <strong>removing the economic conditions that make it possible for women to choose not to marry, not to have children, or to leave marriages.</strong> Cut welfare to single mothers. Redirect childcare subsidies to stay-at-home wives. Double tax benefits for married couples only. Launch a government campaign to stigmatize all other family structures. Oppose the technologies (IVF, contraception, abortion) that give women reproductive autonomy.</p>
+    <p>In the words of the report itself: "Government must choose a side." Heritage has chosen. The question is whether Congress will follow.</p>
+
+    <div class="analysis-box">
+      <div class="analysis-label">Timeline Watch</div>
+      <p>Kevin Roberts explicitly told reporters in January 2026 that Heritage was "pretty confident the Trump administration will be amenable" to these proposals. The OMB under Russell Vought — a Heritage product — is the implementation pipeline. Watch for these proposals to appear in budget reconciliation, executive orders on welfare reform, and agency rulemaking at HHS and Treasury in 2026.</p>
+    </div>
+
+  </div>
+
+  <!-- SIDEBAR -->
+  <div class="article-sidebar">
+    <div class="sidebar-toc">
+      <h4>In This Analysis</h4>
+      <a class="toc-item" href="#hero">What This Document Is</a>
+      <a class="toc-item" href="#">The Core Demographic Argument</a>
+      <a class="toc-item" href="#">Pillar 1: Cutting Welfare to Single Mothers</a>
+      <a class="toc-item" href="#">Pillar 2: Benefits for Married Couples Only</a>
+      <a class="toc-item" href="#">Pillar 3: "Manhattan Project" for Marriage</a>
+      <a class="toc-item" href="#">On Abortion, LGBTQ+, and Women's Independence</a>
+      <a class="toc-item" href="#">Who Wrote It and the Network</a>
+      <a class="toc-item" href="#">Bottom Line</a>
+    </div>
+
+    <div class="sidebar-sources">
+      <h4>Primary Sources</h4>
+      <a class="source-link" href="https://www.heritage.org/sites/default/files/2026-01/SR323.pdf" target="_blank">Full Report PDF — Heritage Foundation</a>
+      <a class="source-link" href="https://www.heritage.org/press/saving-the-american-family-heritage-releases-landmark-report-rebuilding-and-strengthening-us" target="_blank">Heritage Press Release</a>
+      <a class="source-link" href="https://baptistnews.com/article/heritage-calls-on-government-to-save-american-families/" target="_blank">Baptist News Analysis</a>
+      <a class="source-link" href="https://www.ncregister.com/cna/heritage-releases-new-report-on-saving-america-by-saving-the-family" target="_blank">National Catholic Register</a>
+      <a class="source-link" href="https://www.drjamesdobson.org/policy-culture/saving-america-by-saving-the-family/" target="_blank">Dobson Institute Endorsement</a>
+    </div>
+
+    <div class="map-cta">
+      <p>This report is one node in a larger network. See how Heritage connects to ADF, FRC, Vought, NAR, and the dark money infrastructure funding them all.</p>
+      <a href="index.html#map-section">Explore the Full Network Map →</a>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="logo">The Network Exposed</div>
+  <p>thenetworkexposed.org &nbsp;·&nbsp; Analysis based on public documents</p>
+</footer>
+
+</body>
+</html>

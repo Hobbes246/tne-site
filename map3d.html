@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Network — 3D Map</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://unpkg.com/three-spritetext@1.6.5/dist/three-spritetext.min.js"></script>
+<script src="https://unpkg.com/3d-force-graph@1.70.10/dist/3d-force-graph.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@300;400;500&display=swap');
+
+  :root {
+    --bg: #050508;
+    --surface: #0d0d14;
+    --border: #1a1a2e;
+    --gold: #f1c40f;
+    --red: #e74c3c;
+    --white: #ecf0f1;
+    --muted: #6b7280;
+    --panel-bg: rgba(5,5,10,0.96);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--white);
+    font-family: 'IBM Plex Mono', monospace;
+    overflow: hidden;
+    width: 100vw;
+    height: 100vh;
+  }
+
+  #header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 16px 28px;
+    background: linear-gradient(180deg, rgba(5,5,10,0.95) 0%, transparent 100%);
+    display: flex;
+    align-items: baseline;
+    gap: 18px;
+    pointer-events: none;
+  }
+
+  #header h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 30px;
+    letter-spacing: 4px;
+    color: var(--red);
+    text-shadow: 0 0 40px rgba(231,76,60,0.5), 0 0 80px rgba(231,76,60,0.2);
+  }
+
+  #header span {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+
+  /* Info Panel */
+  #info-panel {
+    position: fixed;
+    top: 70px;
+    right: 20px;
+    width: 340px;
+    background: var(--panel-bg);
+    border: 1px solid var(--border);
+    border-right: 3px solid var(--gold);
+    padding: 22px;
+    z-index: 200;
+    display: none;
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
+    backdrop-filter: blur(12px);
+  }
+
+  #info-panel.visible { display: block; }
+
+  #info-panel h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 24px;
+    letter-spacing: 2px;
+    margin-bottom: 6px;
+    line-height: 1.1;
+    color: #f5f0ea;
+  }
+
+  .panel-tag {
+    display: inline-block;
+    font-size: 9px;
+    letter-spacing: 1.2px;
+    padding: 2px 8px;
+    border-radius: 2px;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+  }
+
+  .ideology-flags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-bottom: 12px;
+  }
+
+  .flag {
+    font-size: 8px;
+    letter-spacing: .8px;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    border-radius: 2px;
+  }
+
+  .flag-antidem  { background: rgba(231,76,60,.18);  color: #e74c3c; border: 1px solid rgba(231,76,60,.4); }
+  .flag-abortion { background: rgba(155,89,182,.18); color: #bb8fce; border: 1px solid rgba(155,89,182,.4); }
+  .flag-voting   { background: rgba(52,152,219,.18); color: #5dade2; border: 1px solid rgba(52,152,219,.4); }
+  .flag-women    { background: rgba(230,126,34,.18); color: #eb984e; border: 1px solid rgba(230,126,34,.4); }
+  .flag-white    { background: rgba(192,57,43,.3);   color: #f1948a; border: 1px solid rgba(192,57,43,.5); }
+
+  .desc-section { margin-bottom: 10px; }
+
+  .desc-header {
+    font-size: 8px;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    display: inline-block;
+    border-radius: 2px;
+    margin-bottom: 4px;
+  }
+
+  .dh-antidem  { background: rgba(231,76,60,.15);  color: #e74c3c; }
+  .dh-abortion { background: rgba(155,89,182,.15); color: #bb8fce; }
+  .dh-voting   { background: rgba(52,152,219,.15); color: #5dade2; }
+  .dh-women    { background: rgba(230,126,34,.15); color: #eb984e; }
+  .dh-white    { background: rgba(192,57,43,.25);  color: #f1948a; }
+  .dh-general  { background: rgba(255,255,255,.07); color: #aaa; }
+  .dh-nar      { background: rgba(46,204,113,.15); color: #58d68d; }
+  .dh-lgbtq    { background: rgba(230,126,34,.15); color: #eb984e; }
+
+  .desc-section p {
+    font-size: 11.5px;
+    line-height: 1.75;
+    color: #c0bcb6;
+  }
+
+  .connections {
+    margin-top: 12px;
+    border-top: 1px solid var(--border);
+    padding-top: 10px;
+  }
+
+  .connections h4 {
+    font-size: 9px;
+    letter-spacing: 1px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .conn-item {
+    font-size: 10px;
+    margin: 4px 0;
+    padding-left: 10px;
+    border-left: 2px solid rgba(241,196,15,0.3);
+    cursor: pointer;
+    line-height: 1.5;
+  }
+
+  .conn-item:hover { border-left-color: var(--gold); }
+
+  .close-btn {
+    position: absolute;
+    top: 12px; right: 14px;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 20px;
+    cursor: pointer;
+    line-height: 1;
+  }
+
+  .close-btn:hover { color: var(--white); }
+
+  /* Legend */
+  #legend {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    background: var(--panel-bg);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--red);
+    padding: 14px 18px;
+    z-index: 100;
+    backdrop-filter: blur(8px);
+  }
+
+  #legend h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    letter-spacing: 2px;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 9px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin: 4px 0;
+    font-size: 10px;
+    color: var(--white);
+    opacity: .85;
+  }
+
+  .legend-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* Filters */
+  #filters {
+    position: fixed;
+    top: 62px;
+    left: 20px;
+    z-index: 100;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    max-width: 480px;
+  }
+
+  .filter-btn {
+    font-size: 9px;
+    letter-spacing: 1px;
+    padding: 3px 9px;
+    border: 1px solid var(--border);
+    background: rgba(5,5,10,0.7);
+    color: var(--muted);
+    cursor: pointer;
+    transition: all .18s;
+    text-transform: uppercase;
+    backdrop-filter: blur(4px);
+  }
+
+  .filter-btn.active { color: var(--white); border-color: currentColor; }
+  .filter-btn[data-cat="all"].active,.filter-btn[data-cat="admin"].active { color:#e74c3c;border-color:#e74c3c; }
+  .filter-btn[data-cat="congress"].active { color:#00b4d8;border-color:#00b4d8; }
+  .filter-btn[data-cat="candidate"].active { color:#ff6b6b;border-color:#ff6b6b; }
+  .filter-btn[data-cat="think-tank"].active { color:#3498db;border-color:#3498db; }
+  .filter-btn[data-cat="legal"].active { color:#9b59b6;border-color:#9b59b6; }
+  .filter-btn[data-cat="funding"].active { color:#f1c40f;border-color:#f1c40f; }
+  .filter-btn[data-cat="religious"].active { color:#2ecc71;border-color:#2ecc71; }
+  .filter-btn[data-cat="political"].active { color:#e67e22;border-color:#e67e22; }
+  .filter-btn[data-cat="person"].active { color:#ecf0f1;border-color:#ecf0f1; }
+
+  /* Controls */
+  #controls {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    z-index: 100;
+  }
+
+  .ctrl-btn {
+    background: rgba(5,5,10,0.85);
+    border: 1px solid var(--border);
+    color: var(--white);
+    padding: 7px 14px;
+    cursor: pointer;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: all .2s;
+    backdrop-filter: blur(4px);
+  }
+
+  .ctrl-btn:hover { border-color: var(--gold); color: var(--gold); }
+  .ctrl-btn.active { border-color: var(--gold); color: var(--gold); background: rgba(241,196,15,0.08); }
+
+  /* Hint */
+  #hint {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    pointer-events: none;
+    opacity: 1;
+    transition: opacity 2s;
+  }
+
+  #hint.fade { opacity: 0; }
+
+  /* Loading */
+  #loading {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+  }
+
+  #loading h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px;
+    letter-spacing: 6px;
+    color: var(--red);
+    text-shadow: 0 0 30px rgba(231,76,60,0.6);
+    margin-bottom: 20px;
+  }
+
+  .loading-bar {
+    width: 200px;
+    height: 2px;
+    background: var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .loading-bar::after {
+    content: '';
+    position: absolute;
+    left: -100%;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, var(--red), transparent);
+    animation: scan 1.2s linear infinite;
+  }
+
+  @keyframes scan {
+    from { left: -100%; }
+    to { left: 100%; }
+  }
+
+  /* Scanlines */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.025) 2px, rgba(0,0,0,0.025) 4px);
+    pointer-events: none;
+    z-index: 998;
+  }
+
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); }
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <h2>The Network</h2>
+  <div class="loading-bar"></div>
+</div>
+
+<div id="header">
+  <h1>The Network</h1>
+  <span>Christian Nationalist Organizations &amp; the Trump Administration — 3D Map</span>
+</div>
+
+<div id="filters">
+  <button class="filter-btn active" data-cat="all">All</button>
+  <button class="filter-btn" data-cat="admin">Administration</button>
+  <button class="filter-btn" data-cat="congress">Congress</button>
+  <button class="filter-btn" data-cat="candidate">2026 Candidates</button>
+  <button class="filter-btn" data-cat="think-tank">Think Tanks</button>
+  <button class="filter-btn" data-cat="legal">Legal</button>
+  <button class="filter-btn" data-cat="funding">Dark Money</button>
+  <button class="filter-btn" data-cat="religious">Religious</button>
+  <button class="filter-btn" data-cat="political">Political Orgs</button>
+  <button class="filter-btn" data-cat="person">Key Figures</button>
+</div>
+
+<div id="legend">
+  <h3>Node Types</h3>
+  <div class="legend-item"><div class="legend-dot" style="background:#e74c3c"></div>Administration</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#00b4d8"></div>Congress</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#ff6b6b"></div>2026 Candidates</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#3498db"></div>Think Tank</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#9b59b6"></div>Legal / Advocacy</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#f1c40f"></div>Dark Money</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#2ecc71"></div>Religious</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#e67e22"></div>Political Org</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#ecf0f1"></div>Key Individual</div>
+</div>
+
+<div id="info-panel">
+  <button class="close-btn" onclick="closePanel()">×</button>
+  <h2 id="panel-title"></h2>
+  <div id="panel-tag" class="panel-tag"></div>
+  <div class="ideology-flags" id="panel-flags"></div>
+  <div id="panel-desc"></div>
+  <div class="connections"><h4>Connected To</h4><div id="panel-conn-list"></div></div>
+</div>
+
+<div id="controls">
+  <button class="ctrl-btn active" id="rotate-btn" onclick="toggleRotate()">⟳ Rotating</button>
+  <button class="ctrl-btn" onclick="resetCamera()">↺ Reset View</button>
+  <button class="ctrl-btn" onclick="toggleLabels()">◎ Labels</button>
+</div>
+
+<div id="hint">Drag to rotate · Scroll to zoom · Click a node</div>
+
+<div id="graph"></div>
+
+<script>
+const nodes = [
+  { id: 'trump', label: 'Trump\nAdministration', cat: 'admin', size: 38, desc: 'The second Trump administration (2025-). Within days of taking office, nearly two-thirds of executive actions mirrored Project 2025 proposals. ANTI-DEMOCRATIC: Trump refused to commit to accepting future election results, called for suspending the Constitution, and allies theorize about a Red Caesar authoritarian takeover. ABORTION: Reinstated global gag rule, ended abortion coverage for veterans including rape victims, gutted CDC Division of Reproductive Health, terminated UNFPA funding. ~40% of Project 2025 reproductive restrictions implemented by late 2025. VOTING RIGHTS: Signed executive order requiring proof of citizenship to register, which experts say disenfranchises millions of eligible citizens.' },
+  { id: 'vought', label: 'Russell Vought\n(OMB Director)', cat: 'admin', size: 28, desc: 'Confirmed OMB Director Feb 6, 2025. Self-avowed Christian nationalist. ANTI-DEMOCRATIC: Center for Renewing America advocates dismantling the administrative state and concentrating all power in the executive, bypassing congressional oversight. Has called for defunding the FBI and using Insurrection Act against domestic opponents. ABORTION: CRA policy agenda calls for embedding fetal personhood across federal agencies and treating abortion as definitionally not healthcare. WOMEN\'S RIGHTS: Supports elimination of gender equity language from all federal regulations and rollback of Title IX protections.' },
+  { id: 'miller', label: 'Stephen Miller\n(Senior Advisor)', cat: 'admin', size: 24, desc: 'Senior White House advisor and key immigration architect. ANTI-DEMOCRATIC: Crafted executive orders courts repeatedly found unconstitutional; uses litigation to undermine democratic norms. WHITE NATIONALIST TIES: Documented emails in which Miller recommended white nationalist websites including VDARE to Breitbart editors. Has close ties to known white nationalist Richard Spencer from their time at Duke. VOTING RIGHTS: Supports strict proof-of-citizenship requirements and opposes automatic voter registration. ABORTION: Supports enforcing Comstock Act to effectively ban all medication abortion.' },
+  { id: 'hegseth', label: 'Pete Hegseth\n(Defense Sec.)', cat: 'admin', size: 22, desc: 'Secretary of Defense. ANTI-DEMOCRATIC: Has called for military use domestically against political opponents. Author of American Crusade which frames politics as a holy war requiring Christian warriors to take the country back by force if necessary. NAR CONNECTIONS: Deeply embedded in New Apostolic Reformation dominionist theology calling for Christian takeover of all institutions. WOMEN\'S RIGHTS: Oversaw rollback of women in combat roles, removal of DEI programs, and rescission of policies protecting servicewomen from pregnancy-related discrimination.' },
+  { id: 'vance', label: 'JD Vance\n(Vice President)', cat: 'admin', size: 24, desc: 'Vice President. ANTI-DEMOCRATIC: Has suggested Trump should ignore Supreme Court rulings he disagrees with; expressed sympathy for Red Caesar concept of strongman rule. Called for mass firing of civil servants and replacement with political loyalists. WOMEN\'S RIGHTS: Repeatedly stated women without children are childless cat ladies with no political standing; opposed no-fault divorce; supported restricting women\'s reproductive autonomy. ABORTION: Supported a national abortion ban; previously compared abortion to slavery. VOTING RIGHTS: Supports proof-of-citizenship requirements; opposed certification of 2020 election.' },
+  { id: 'bondi', label: 'Pam Bondi\n(Attorney General)', cat: 'admin', size: 20, desc: 'Attorney General. ANTI-DEMOCRATIC: Signed the February 2025 executive order creating an anti-Christian bias task force to use DOJ to enforce Christian nationalist priorities. VOTING RIGHTS: DOJ under Bondi has deprioritized Voting Rights Act enforcement and initiated investigations into states with expansive mail voting. ABORTION: Directed DOJ resources toward anti-abortion enforcement frameworks.' },
+  { id: 'white_faith', label: 'Paula White-Cain\n(Faith Office)', cat: 'admin', size: 18, desc: 'Senior advisor to White House Faith Office. ANTI-DEMOCRATIC: The Faith Office institutionalizes the Christian nationalist goal of merging state and church power, a direct assault on First Amendment norms. NAR: Deeply embedded in the New Apostolic Reformation, which advocates Seven Mountain Dominionism - Christian takeover of government, media, education, business, arts, family, and religion. WOMEN\'S RIGHTS: Her theology explicitly subordinates women to male spiritual authority and opposes women in leadership roles outside approved Christian frameworks.' },
+  { id: 'johnson', label: 'Mike Johnson\n(House Speaker)', cat: 'admin', size: 22, desc: 'House Speaker. ANTI-DEMOCRATIC: Key architect of the legal strategy to overturn the 2020 election; recruited 147 Republicans to sign an amicus brief contesting certified state results. Stated the Bible should inform every law passed by Congress. DOMINIONISM: Documented dominionist who believes government must be rebuilt on explicitly Christian principles. ABORTION: One of Congress\'s most anti-abortion members; opposed abortion even in cases of rape and incest. LGBTQ+: Previously ran an anti-gay legal ministry; compared homosexuality to prostitution and incest.' },
+  { id: 'navarro', label: 'Peter Navarro\n(Trade Advisor)', cat: 'admin', size: 16, desc: 'Senior Trade Advisor. ANTI-DEMOCRATIC: Convicted of contempt of Congress for defying a Jan 6th Committee subpoena - one of the most direct acts of undermining congressional oversight in modern history. Authored the Navarro Report claiming massive 2020 election fraud with no credible evidence, used to justify Jan 6th objections. Served prison time before being pardoned.' },
+  { id: 'heritage', label: 'Heritage\nFoundation', cat: 'think-tank', size: 34, desc: 'Primary architect of Project 2025. ANTI-DEMOCRATIC: President Kevin Roberts declared: We are in the process of the second American Revolution, which will remain bloodless if the left allows it to be. Project 2025 proposes eliminating civil service protections for 50,000+ workers to allow political purges and vastly expanding presidential power. ABORTION: Calls for enforcing the Comstock Act to ban all medication abortion, revoking FDA approval of mifepristone, embedding fetal personhood in federal law, ending EMTALA emergency abortion protections. ~40% of reproductive restrictions already implemented by late 2025. VOTING RIGHTS: Champions proof-of-citizenship requirements, opposes mail voting, runs an Election Fraud Map used to justify voter roll purges disproportionately removing minority voters. WOMEN\'S RIGHTS: Project 2026 calls for removing gender, abortion, reproductive health, and sexual orientation from all federal regulations; seeks to abolish Dept of Education gutting Title IX enforcement.' },
+  { id: 'claremont', label: 'Claremont\nInstitute', cat: 'think-tank', size: 28, desc: 'Described by critics as an openly anti-democracy think tank. ANTI-DEMOCRATIC: Intellectually birthed the Red Caesar concept - openly advocating for an authoritarian strongman to bypass democratic institutions. Senior fellow John Eastman authored memos to overturn the 2020 election. Michael Anton wrote the Flight 93 Election framing opposition as existential threat requiring extra-legal action. WHITE NATIONALIST TIES: Published essay by Raw Egg Nationalist affiliated with neo-Nazi publisher Antelope Hill. Granted fellowship to Jack Posobiec. Its alumni listserv contained white nationalist and Holocaust denial content prompting scholars to quit. Described by Slate as a racist fever swamp with deep connections to the conspiratorial alt-right. ABORTION: Supports Project 2025 full anti-abortion agenda and provides the legal-intellectual framework for overriding federal abortion protections.' },
+  { id: 'cra', label: 'Center for\nRenewing America', cat: 'think-tank', size: 24, desc: 'Founded by Russell Vought. ANTI-DEMOCRATIC: Drafted executive orders to concentrate executive power, eliminate independent agency authority, and facilitate mass purges of civil servants. Explicitly advocates making federal agencies answerable only to the president. Called for defunding the FBI and using Insurrection Act powers against domestic political opponents. ABORTION: Listed Christian Nationalism and fetal personhood as top federal priorities; drafted policy frameworks treating abortion as outside healthcare. VOTING RIGHTS: Supports proof-of-citizenship requirements and restricting mail voting access.' },
+  { id: 'afpi', label: 'America First\nPolicy Institute', cat: 'think-tank', size: 22, desc: 'Co-founded by Linda McMahon. ANTI-DEMOCRATIC: Develops frameworks to expand executive power, reduce judicial independence, and gut regulatory agencies. ABORTION: Paula White-Cain\'s Center for American Values promotes anti-abortion Christian nationalist agenda. WOMEN\'S RIGHTS: Consistently opposes gender equity policies, reproductive healthcare access, and Title IX enforcement.' },
+  { id: 'hillsdale', label: 'Hillsdale\nCollege', cat: 'think-tank', size: 16, desc: 'Conservative Christian college. ANTI-DEMOCRATIC: President Larry Arnn called for abolishing the Dept of Education. Hillsdale\'s 1776 Curriculum frames American history as a Christian heritage project. WHITE NATIONALIST TIES: Curriculum criticized by historians for whitewashing slavery and promoting an exclusively white-European framing of American civilization. ABORTION: Officially opposes abortion; provides ideological pipeline for anti-abortion policy. VOTING RIGHTS: Faculty have published work opposing mail voting and supporting proof-of-citizenship requirements.' },
+  { id: 'liberty', label: 'Liberty\nUniversity', cat: 'think-tank', size: 16, desc: 'Evangelical university founded by Jerry Falwell Sr. ABORTION: Institutionally committed to total abortion ban; students and faculty must adhere to anti-abortion doctrine. ANTI-DEMOCRATIC: Serves as political organizing platform for Republican candidates, blurring tax-exempt status with partisan activity. WOMEN\'S RIGHTS: Institutional theology subordinates women to male authority; has faced Title IX lawsuits for mishandling sexual assault reports.' },
+  { id: 'cpi', label: 'Conservative\nPartnership Institute', cat: 'think-tank', size: 18, desc: 'Key Project 2025 advisory organization. ANTI-DEMOCRATIC: Served as institutional home for key figures who attempted to overturn the 2020 election including Mark Meadows. Described as the nerve center of the MAGA effort to prevent the transfer of power. VOTING RIGHTS: Develops model legislation for state-level voter restriction bills and promotes election fraud narratives used to justify voter roll purges.' },
+  { id: 'afl', label: 'America First\nLegal', cat: 'legal', size: 22, desc: 'Founded by Stephen Miller. ANTI-DEMOCRATIC: Uses litigation to attack diversity programs, voting rights enforcement, and democratic norms. WHITE NATIONALIST TIES: Founder Stephen Miller documented recommending white nationalist website VDARE to Breitbart editors. ABORTION: Has litigated against abortion access measures and reproductive healthcare funding. VOTING RIGHTS: Filed suits to block voter registration drives, mail voting protections, and to enforce strict proof-of-citizenship requirements. Received $21M+ from DonorsTrust in 2022.' },
+  { id: 'adf', label: 'Alliance Defending\nFreedom', cat: 'legal', size: 20, desc: 'SPLC-designated hate group. ANTI-DEMOCRATIC: Has worked internationally to criminalize homosexuality and supported laws in foreign countries imposing the death penalty for same-sex relations. ABORTION: One of the primary legal architects of post-Dobbs strategy; drafted model legislation used in multiple state abortion bans. Litigated to restrict mifepristone access to the Supreme Court. WOMEN\'S RIGHTS: Has litigated against contraception coverage mandates, sex discrimination protections, and equal pay rules. VOTING RIGHTS: Has challenged motor-voter registration laws and voting access measures in multiple states.' },
+  { id: 'jcn', label: 'Judicial Crisis\nNetwork', cat: 'legal', size: 20, desc: 'Leonard Leo\'s primary judicial advocacy vehicle. ANTI-DEMOCRATIC: Ran dark money campaigns to confirm Supreme Court justices who have since gutted the Voting Rights Act (Shelby County), overturned Roe v. Wade (Dobbs), and expanded presidential immunity. ABORTION: Its Supreme Court confirmation work directly produced the Dobbs majority eliminating the constitutional right to abortion. VOTING RIGHTS: Its confirmed justices gutted the preclearance provisions of the Voting Rights Act in Shelby County v. Holder (2013), enabling a wave of voter restriction laws.' },
+  { id: 'fed_soc', label: 'Federalist\nSociety', cat: 'legal', size: 26, desc: 'Conservative legal organization co-chaired by Leonard Leo. ANTI-DEMOCRATIC: Built the judicial pipeline producing courts rolling back democratic norms, voting rights, reproductive rights, and agency authority. ABORTION: Federalist Society-vetted Supreme Court (Gorsuch, Kavanaugh, Barrett) issued the Dobbs decision overturning Roe v. Wade. VOTING RIGHTS: Society members authored Shelby County v. Holder gutting the Voting Rights Act and Rucho v. Common Cause permitting unlimited partisan gerrymandering.' },
+  { id: 'frc', label: 'Family Research\nCouncil', cat: 'legal', size: 16, desc: 'SPLC-designated hate group. ANTI-DEMOCRATIC: Has lobbied for laws criminalizing LGBTQ+ expression and works internationally to export anti-gay criminalization laws. ABORTION: Advocates for total abortion ban from fertilization; actively lobbied for Dobbs and now advocates for federal fetal personhood legislation. WOMEN\'S RIGHTS: Opposes equal pay legislation, Title IX application to transgender students, and women in military combat roles.' },
+  { id: 'marble', label: 'Marble Freedom\nTrust', cat: 'funding', size: 24, desc: 'Leonard Leo\'s primary dark money vehicle, seeded by Barre Seid\'s $1.6B donation - the largest single political donation in US history. ANTI-DEMOCRATIC: Funds a network explicitly aimed at crushing liberal dominance - permanently restructuring American political institutions to be unresponsive to majority opinion. Over a billion dollars from a single donor represents one of the most significant unaccountable political operations in American history. Funds organizations working to restrict voting access, pack courts, and undermine democratic norms.' },
+  { id: '85fund', label: 'The 85 Fund', cat: 'funding', size: 22, desc: 'Leo\'s 501(c)(3) dark money hub. In 2022 contributed $92M to DonorsTrust - its largest single contribution - to be disbursed to Project 2025 organizations. ANTI-DEMOCRATIC: Operates as an opaque pass-through for dark money specifically designed to obscure the source of political spending. Funds organizations working to restrict abortion access, voting rights, and democratic norms.' },
+  { id: 'donors_trust', label: 'DonorsTrust', cat: 'funding', size: 22, desc: 'Dark money behemoth disbursing $2B+ annually. Received $181M+ from Leo-backed groups 2019-2022. ANTI-DEMOCRATIC: Functions as a dark money ATM allowing ultra-wealthy donors to fund politically extreme causes without public disclosure. Contributed $21M+ to 40 Project 2025 advisory organizations in 2022. ABORTION: Major funding conduit for anti-abortion legal and political organizations. VOTING RIGHTS: Funded organizations actively working to restrict voting access and oppose Voting Rights Act enforcement.' },
+  { id: 'teneo', label: 'Teneo Network', cat: 'funding', size: 18, desc: 'Leonard Leo\'s Federalist Society for everything. ANTI-DEMOCRATIC: Explicitly focused on reshaping all American institutions - journalism, business, education, nonprofits - to end what Leo calls liberal dominance. Spent nearly $504M between 2015-2021. The goal is to make American institutions permanently unresponsive to liberal or progressive majorities regardless of electoral outcomes.' },
+  { id: 'koch', label: 'Koch Network', cat: 'funding', size: 20, desc: 'Charles Koch\'s vast political funding infrastructure. ANTI-DEMOCRATIC: Funded efforts to roll back campaign finance laws (Citizens United), undermine union organizing rights, and oppose voting rights legislation. ABORTION: Koch-funded groups pushed anti-abortion model legislation at the state level. VOTING RIGHTS: Koch-affiliated organizations funded voter ID legislation, opposed automatic voter registration, and backed candidates opposing the Voting Rights Act.' },
+  { id: 'nar', label: 'New Apostolic\nReformation (NAR)', cat: 'religious', size: 20, desc: 'ANTI-DEMOCRATIC: Seven Mountain Dominionism explicitly calls for Christians to seize control of government, eliminating pluralistic democratic governance. Believes Trump is divinely appointed to carry out God\'s plan for Christian rule - not democratic mandate. Practices spiritual warfare against political opponents framing politics as cosmic battle between good and evil. WOMEN\'S RIGHTS: Enforces strict patriarchal gender roles; women are explicitly subordinated to male spiritual and civic authority. LGBTQ+: Actively promotes conversion therapy and criminalization of homosexuality in countries where its missionaries operate.' },
+  { id: 'faith_office', label: 'White House\nFaith Office', cat: 'religious', size: 18, desc: 'ANTI-DEMOCRATIC: Institutionalizes the Christian nationalist project of merging state and church - a direct violation of the First Amendment Establishment Clause as understood by generations of constitutional scholars. Used to embed religious nationalist advisors in federal policymaking without democratic accountability. WOMEN\'S RIGHTS: Directed by Paula White-Cain, whose theology subordinates women to male authority; used to advance anti-abortion and anti-contraception agendas within federal agencies.' },
+  { id: 'dof', label: 'Focus on the\nFamily', cat: 'religious', size: 16, desc: 'Signed on to Project 2025. ABORTION: One of America\'s longest-standing anti-abortion organizations; founder James Dobson was instrumental in building the evangelical political movement that ultimately overturned Roe v. Wade. WOMEN\'S RIGHTS: Advocates for traditional gender roles with women in domestic roles subordinate to husbands. Opposes no-fault divorce, contraception education, and equal pay legislation framed as feminist ideology. LGBTQ+: Has promoted conversion therapy; has called homosexuality a disorder.' },
+  { id: 'p2025', label: 'Project 2025', cat: 'political', size: 32, desc: 'Heritage Foundation\'s 900-page blueprint being implemented by the Trump administration. ANTI-DEMOCRATIC: Proposes eliminating civil service protections for 50,000+ federal workers to allow political purges; concentrating all executive power in the president; dismantling independent agencies; and using DOJ and FBI to target political opponents. ABORTION: Calls for enforcing the 1873 Comstock Act to ban all medication abortion; revoking FDA approval of mifepristone; ending EMTALA emergency abortion protections; embedding fetal personhood in federal law; creating an abortion surveillance system; defunding Planned Parenthood. ~40% of reproductive restrictions underway by late 2025. VOTING RIGHTS: Advocates proof-of-citizenship requirements, elimination of mail voting, purging of voter rolls, and ending ranked-choice voting. WOMEN\'S RIGHTS: Calls for removing gender, abortion, reproductive health, and sexual orientation from all federal regulations. Seeks to abolish Dept of Education, gutting Title IX enforcement nationwide.' },
+  { id: 'tpusa', label: 'Turning Point\nUSA', cat: 'political', size: 18, desc: 'Charlie Kirk\'s youth conservative organization. ANTI-DEMOCRATIC: Key organizer of the January 6th Stop the Steal rally. Kirk sent messages to chief of staff Mark Meadows urging use of the military to prevent 2020 election certification. WHITE NATIONALIST TIES: Has repeatedly employed or platformed staff with documented white nationalist ties; Kirk has made statements echoing replacement theory. ABORTION: Strongly anti-abortion; Kirk has stated life begins at fertilization and supports total bans. VOTING RIGHTS: Promotes election integrity narratives used to justify voter restriction legislation.' },
+  { id: 'mfl', label: 'Moms for\nLiberty', cat: 'political', size: 16, desc: 'Parent rights organization focused on school boards. ANTI-DEMOCRATIC: SPLC-designated extremist group. Co-founder quoted Adolf Hitler in a newsletter. Works to ban books, remove curricula about racism and LGBTQ+ history, and purge dissenting school board members. WOMEN\'S RIGHTS: Opposes comprehensive sex education, contraception access for minors, and reproductive health education. ABORTION: Supports anti-abortion education policies and opposes school health programs acknowledging abortion.' },
+  { id: 'agenda47', label: 'Agenda 47\n(Trump Campaign)', cat: 'political', size: 22, desc: 'Trump\'s 2024 policy platform. ANTI-DEMOCRATIC: Includes proposals to invoke the Insurrection Act on day one to deploy military against domestic protesters; to use DOJ to prosecute political opponents; and to refuse to accept future unfavorable election results. ABORTION: Supports federal actions restricting abortion access nationwide including Comstock Act enforcement and global gag rule. VOTING RIGHTS: Supports proof-of-citizenship requirements, opposes automatic voter registration, contains provisions to federalize election oversight in states that vote against Trump.' },
+  { id: 'leo', label: 'Leonard Leo', cat: 'person', size: 28, desc: 'Co-chairman of the Federalist Society controlling a $1.6B+ dark money empire. ANTI-DEMOCRATIC: Engineered the most profound undemocratic transformation of the federal judiciary in modern history - placing six conservative justices on the Supreme Court who have rolled back voting rights (Shelby County), reproductive rights (Dobbs), and union rights. His network explicitly aims to reshape all American institutions to be permanently conservative regardless of electoral outcomes - making democratic majorities irrelevant to policy. ABORTION: His judicial project directly produced the Dobbs majority overturning Roe v. Wade. VOTING RIGHTS: His confirmed justices gutted the Voting Rights Act in Shelby County v. Holder.' },
+  { id: 'roberts_k', label: 'Kevin Roberts\n(Heritage Pres.)', cat: 'person', size: 20, desc: 'Heritage Foundation president. ANTI-DEMOCRATIC: Declared We are in the process of the second American Revolution, which will remain bloodless if the left allows it to be - an explicit embrace of extra-democratic change. Has stated conservatives must use all tools of federal power to permanently restructure American society regardless of future democratic outcomes. ABORTION: Oversees Heritage\'s anti-abortion agenda including Project 2026, which calls for banning abortion pills, enforcing Comstock, embedding fetal personhood, and dismantling reproductive healthcare access globally.' },
+  { id: 'haywood', label: 'Charles Haywood\n(SACR Founder)', cat: 'person', size: 18, desc: 'SACR founder. ANTI-DEMOCRATIC: Openly advocates replacing American democracy with authoritarian Caesar rule. Has written: the fastest, cleanest path to real necessary change is Caesar. Praised the January 6th Capitol attack as pretty awesome. Described desire to become a warlord leading an armed patronage network. Seeks to recruit shooters for his Indiana compound. WHITE NATIONALIST TIES: In a 2023 discussion hosted by Christopher Rufo, expressed support for alliances with white nationalists to destroy the left, citing Pinochet and Franco as positive models. Described by experts as promoting palingenetic ultra-nationalism - a feature of fascism. WOMEN\'S RIGHTS: SACR is an exclusively male organization; Haywood\'s philosophy explicitly reduces women to subordinate domestic roles as bearers of children for the civilizational project.' },
+  { id: 'sacr', label: 'Society for American\nCivic Renewal (SACR)', cat: 'political', size: 18, desc: 'Founded by Charles Haywood. ANTI-DEMOCRATIC: Internal mission calls for a renewed American regime through authority and its legitimate forceful exercise - with no mention of electoral processes or the Constitution. Experts describe it as planning for religious autocracy. WHITE NATIONALIST TIES: Haywood has expressed support for alliances with white nationalists; experts describe SACR\'s ideology as palingenetic ultra-nationalism. WOMEN\'S RIGHTS: Exclusively male organization whose founding ideology subordinates women to patriarchal authority and demands women bear children for civilizational purposes.' },
+  { id: 'ryan_williams', label: 'Ryan Williams\n(Claremont Pres.)', cat: 'person', size: 16, desc: 'President of the Claremont Institute. ANTI-DEMOCRATIC: States the institute\'s mission is to save western civilization - framing democratic pluralism as a civilizational threat. Is a founding board member of SACR, whose documents describe replacing democratic government with religious autocracy. Claremont under Williams has championed Red Caesar theory and hosted speakers advocating post-constitutional authoritarian rule.' },
+  { id: 'anton', label: 'Michael Anton\n(Former NSC)', cat: 'person', size: 14, desc: 'Claremont fellow, former NSC spokesman. ANTI-DEMOCRATIC: Authored The Flight 93 Election framing democratic opposition to Trump as equivalent to a terrorist attack requiring extra-legal response. In his book The Stakes, openly weighs a Red Caesar authoritarian scenario as preferable to democratic outcomes. Has engaged in discussions with neo-reactionary philosopher Curtis Yarvin about post-democratic governance. WHITE NATIONALIST TIES: Published in venues with white nationalist contributors; promoted great replacement adjacent demographic anxieties.' },
+  { id: 'seid', label: 'Barre Seid\n(Megadonor)', cat: 'person', size: 18, desc: 'Manufacturing magnate who gave Leonard Leo $1.6B in 2021 - the largest single political donation in US history. ANTI-DEMOCRATIC: This single transfer, structured through a complex corporate maneuver to avoid taxes, represents an unprecedented concentration of unaccountable political power in one individual. Seid\'s explicit goal is to fund the permanent conservative restructuring of American institutions, making democratic majorities unable to reverse conservative policy gains.' },
+  { id: 'eastman', label: 'John Eastman\n(Claremont)', cat: 'person', size: 14, desc: 'Claremont fellow. ANTI-DEMOCRATIC: Authored the Eastman Memos advising VP Pence to unilaterally refuse to certify the 2020 election in direct violation of the Constitution. Spoke at the January 6th rally before the Capitol attack. Had his law license recommended for disbarment for his role in the attempted coup. VOTING RIGHTS: His memos proposed disenfranchising millions of voters in swing states by having their certified results overridden by Congress.' },
+  { id: 'yenor', label: 'Scott Yenor\n(SACR/Claremont)', cat: 'person', size: 14, desc: 'Boise State professor and SACR/Claremont figure. WOMEN\'S RIGHTS: Made widely-condemned statements arguing women should be discouraged from careers in favor of child-bearing; stated Every effort has to be made to re-stigmatize women taking birth control for reasons other than family planning. Called for dismantling women\'s studies departments. ANTI-DEMOCRATIC: Embedded in both SACR (which advocates religious autocracy) and Claremont (which advocates Red Caesar rule). His SACR role involves building local networks capable of operating outside democratic institutional frameworks.' },
+  { id: 'hawley', label: 'Josh Hawley\n(R-MO, Senate)', cat: 'congress', size: 24, desc: 'Openly self-identifies as a Christian nationalist. ANTI-DEMOCRATIC: Was the first senator to announce he would object to certifying the 2020 election; was photographed raising a fist in support of January 6th rioters. His Manhood agenda frames political opposition as an assault on Christian masculinity requiring forceful response. Two staffers credited as Project 2025 contributors; former chief of staff went directly to Heritage Foundation as VP. ABORTION: Opposes abortion in nearly all circumstances; voted against exceptions for rape and incest; has called for federal abortion legislation. VOTING RIGHTS: Supports proof-of-citizenship requirements; voted to reject certification of 2020 results from multiple states, attempting to disenfranchise millions of voters.' },
+  { id: 'cruz', label: 'Ted Cruz\n(R-TX, Senate)', cat: 'congress', size: 20, desc: 'Sen. Ted Cruz (R-TX). ANTI-DEMOCRATIC: Objected to certification of 2020 election results; called for an electoral commission to delay certification - a mechanism to allow Congress to override voters. ABORTION: Opposed all abortion exceptions including rape, incest, and life of the mother. Voted against codifying Roe even as a symbolic measure. Supports using Comstock Act to ban medication abortion. VOTING RIGHTS: Supported proof-of-citizenship legislation; opposed Voting Rights Act reauthorization; staffer listed in Project 2025 document.' },
+  { id: 'cotton', label: 'Tom Cotton\n(R-AR, Senate)', cat: 'congress', size: 18, desc: 'Sen. Tom Cotton (R-AR). ANTI-DEMOCRATIC: Called for deploying the military against Black Lives Matter protesters in 2020. Supported election objections in 2021. WHITE NATIONALIST TIES: Has pushed anti-immigration positions framing high immigration as diluting conservative white voting power. ABORTION: Supports near-total abortion ban; opposes exceptions. VOTING RIGHTS: Supports proof-of-citizenship requirements and has opposed reauthorization of the Voting Rights Act.' },
+  { id: 'scott', label: 'Rick Scott\n(R-FL, Senate)', cat: 'congress', size: 18, desc: 'Sen. Rick Scott (R-FL). ANTI-DEMOCRATIC: Published 11-Point Plan calling for sunsetting all federal legislation every 5 years - effectively requiring constant re-passage of voting rights, civil rights, Medicare, and Social Security or they expire. Supported election objections in 2021. ABORTION: Staunchly anti-abortion; signed six-week abortion ban as Florida governor. VOTING RIGHTS: As Florida governor, signed legislation restricting early voting, purging voter rolls, and adding obstacles to vote-by-mail. Heritage Foundation formally partnered with him on these positions.' },
+  { id: 'mtg', label: 'Marjorie Taylor Greene\n(R-GA, House)', cat: 'congress', size: 18, desc: 'Rep. Marjorie Taylor Greene (R-GA). ANTI-DEMOCRATIC: Called for national divorce - separating the US into red and blue nations; supported January 6th; called for pardons of all Capitol rioters. Called for execution of Democratic officials. WHITE NATIONALIST TIES: Has promoted Great Replacement Theory - the white nationalist belief that elites are replacing white Americans with immigrants. Has appeared at events organized by white nationalist Nick Fuentes. ABORTION: Supports total abortion ban from fertilization; opposes all exceptions. VOTING RIGHTS: Promoted false 2020 fraud claims; opposed all voting access legislation.' },
+  { id: 'gaetz', label: 'Matt Gaetz\n(R-FL)', cat: 'congress', size: 16, desc: 'Rep. Matt Gaetz (R-FL), nominated as AG (withdrew). ANTI-DEMOCRATIC: Among the most aggressive January 6th apologists in Congress; called for mass pardons of all rioters. Voted against certifying 2020 election. ABORTION: Staunchly anti-abortion; would have overseen DOJ anti-abortion enforcement agenda as AG. VOTING RIGHTS: Supports voter restriction measures; has opposed Voting Rights Act enforcement.' },
+  { id: 'banks', label: 'Jim Banks\n(R-IN, Senate)', cat: 'congress', size: 16, desc: 'Sen. Jim Banks (R-IN). ANTI-DEMOCRATIC: Authored Republican Study Committee Blueprint praised by Heritage Foundation\'s Kevin Roberts calling for dismantling dozens of federal agencies. Supported 2020 election objections. ABORTION: Chaired the House Pro-Life Caucus; supports total abortion ban with no exceptions; authored multiple anti-abortion bills. VOTING RIGHTS: Supports proof-of-citizenship requirements and has opposed all voting access legislation.' },
+  { id: 'eric_schmitt', label: 'Eric Schmitt\n(R-MO, Senate)', cat: 'congress', size: 14, desc: 'Sen. Eric Schmitt (R-MO). ANTI-DEMOCRATIC: As Missouri AG, filed baseless election fraud lawsuits in other states - a documented misuse of state AG power to interfere in elections. ABORTION: Authored Missouri\'s near-total abortion ban as AG; one of the most anti-abortion officials in the country. VOTING RIGHTS: Filed suit to prevent counting of mail-in ballots in 2020; supported proof-of-citizenship requirements. Co-litigated multiple anti-abortion and anti-LGBTQ+ cases with ADF.' },
+  { id: 'fischer', label: 'Deb Fischer\n(R-NE, Senate)', cat: 'congress', size: 14, desc: 'Sen. Deb Fischer (R-NE). Heritage Foundation event participant. ABORTION: Supported anti-abortion legislation; voted to restrict abortion access. VOTING RIGHTS: Supported proof-of-citizenship requirements and opposed federal voting access legislation.' },
+  { id: 'schweikert', label: 'David Schweikert\n(R-AZ, House)', cat: 'congress', size: 14, desc: 'Rep. David Schweikert (R-AZ). Heritage Foundation event participant. ANTI-DEMOCRATIC: Voted to object to certification of 2020 election results in Arizona and Pennsylvania. ABORTION: Voted consistently against abortion access; supported Project 2025-aligned restrictions. VOTING RIGHTS: Supported Arizona\'s voter restriction laws and proof-of-citizenship requirements.' },
+  { id: 'paxton', label: 'Ken Paxton\n(TX-Senate 2026)', cat: 'candidate', size: 20, desc: 'Texas AG running for Senate in 2026. ANTI-DEMOCRATIC: Filed Texas v. Pennsylvania seeking to have the Supreme Court throw out election results in four states - attempting to overturn votes of tens of millions of Americans. Was impeached by the Texas House (acquitted by Senate) for bribery and abuse of office. ABORTION: One of the most aggressive anti-abortion AGs in the country; has prosecuted people assisting women in obtaining out-of-state abortions; co-litigated with ADF to ban mifepristone nationwide. VOTING RIGHTS: Has purged voter rolls using methodology experts say disenfranchises eligible voters; opposed every voting access measure in Texas. WOMEN\'S RIGHTS: Investigated a woman who fled Texas to obtain abortion care; used the AG office as an instrument of reproductive coercion.' },
+  { id: 'hunt_w', label: 'Wesley Hunt\n(TX-Senate 2026)', cat: 'candidate', size: 14, desc: 'Rep. Wesley Hunt (R-TX), 2026 Senate candidate. ANTI-DEMOCRATIC: Trump loyalist who has voted with the administration\'s anti-democratic agenda. ABORTION: Consistently anti-abortion voting record. VOTING RIGHTS: Supports voter restriction measures aligned with Heritage Foundation agenda.' },
+  { id: 'green_mark', label: 'Mark Green\n(TN-Senate 2026)', cat: 'candidate', size: 14, desc: 'Rep. Mark Green (R-TN), 2026 Senate candidate. ANTI-DEMOCRATIC: As House Homeland Security chair, used oversight authority to advance Project 2025\'s immigration enforcement agenda. Supported 2020 election objections. ABORTION: Supported near-total abortion bans and opposed all federal abortion protections. WOMEN\'S RIGHTS: Has described transgender identity as a disease; opposes gender-affirming care and LGBTQ+ inclusion in education.' },
+  { id: 'whatley', label: 'Michael Whatley\n(NC-Senate 2026)', cat: 'candidate', size: 14, desc: 'Former RNC Chair, 2026 Senate candidate in NC. ANTI-DEMOCRATIC: As RNC Chair, oversaw the party\'s election integrity apparatus - a nationwide voter restriction infrastructure. His RNC operatives challenged thousands of voter registrations in swing states in 2024. VOTING RIGHTS: The RNC under Whatley pursued aggressive voter roll purge strategies that critics say disenfranchised eligible voters, particularly in minority communities. ABORTION: Aligned with Republican Party anti-abortion platform; supports Project 2025 restrictions.' },
+  { id: 'moore_nc', label: 'Tim Moore\n(NC-Senate 2026)', cat: 'candidate', size: 12, desc: 'Former NC House Speaker, 2026 Senate candidate. ANTI-DEMOCRATIC: As Speaker, overrode the Democratic governor\'s vetoes through procedural maneuvers; helped gerrymander NC legislative maps to ensure Republican supermajorities regardless of statewide vote totals. VOTING RIGHTS: Oversaw passage of strict voter ID laws, reduction of early voting periods, and elimination of same-day registration - all measures disproportionately affecting minority voters. ABORTION: Supported and signed NC abortion restriction legislation as Speaker.' },
+  { id: 'lahue', label: 'Eric Schmitt\n(AK-Senate 2026)', cat: 'candidate', size: 12, desc: 'Multiple Republican candidates are lining up for Alaska\'s Senate seat in 2026 with ties to the Heritage Foundation network. ANTI-DEMOCRATIC: Alaska\'s ranked-choice voting system - which Project 2025 explicitly calls for eliminating - is a key target. Candidates aligned with the movement have pledged to oppose RCV. VOTING RIGHTS: Heritage Foundation has specifically targeted Alaska\'s mail voting and RCV system as models of what they want to eliminate nationwide.' },
+  { id: 'berg_nd', label: 'Kevin Cramer or challenger\n(ND-Senate 2026)', cat: 'candidate', size: 12, desc: 'North Dakota Senate race 2026. Sen. Kevin Cramer has ties to Heritage Foundation and has aligned with Project 2025 framework on energy, voting restrictions, and anti-abortion legislation. ANTI-DEMOCRATIC: Supported 2020 election objections. ABORTION: Has voted consistently against abortion access. VOTING RIGHTS: Supports proof-of-citizenship requirements.' },
+  { id: 'az_2026', label: 'Kari Lake\n(AZ-Senate 2026)', cat: 'candidate', size: 18, desc: 'Kari Lake is running for Arizona\'s Senate seat in 2026. ANTI-DEMOCRATIC: One of the most prominent 2020 election deniers in the country; spent years litigating false election fraud claims in Arizona. Called election workers criminals. Has stated she will only accept election results if she wins. WHITE NATIONALIST TIES: Has appeared at events with white nationalist Nick Fuentes and has refused to condemn white nationalist support. ABORTION: Opposes abortion access; has equivocated on Arizona\'s near-total abortion ban. VOTING RIGHTS: Has advocated eliminating mail voting, early voting, and voter registration drives in Arizona.' },
+  { id: 'va_2026', label: 'John McGuire\n(VA-Senate 2026)', cat: 'candidate', size: 12, desc: 'Rep. John McGuire (R-VA) is running for Virginia\'s Senate seat in 2026. ANTI-DEMOCRATIC: Has aligned with the administration\'s anti-democratic agenda. ABORTION: Consistently anti-abortion voting record aligned with Project 2025 framework. VOTING RIGHTS: Supports voter restriction measures.' },
+  { id: 'mn_2026', label: 'Tom Emmer or challenger\n(MN-Senate 2026)', cat: 'candidate', size: 12, desc: 'Minnesota Senate race 2026 targeting Amy Klobuchar\'s seat. Republican candidates aligned with Heritage Foundation framework on voter restrictions and anti-abortion agenda. VOTING RIGHTS: Heritage Foundation has specifically targeted Minnesota\'s expansive voting access laws as models to dismantle. ABORTION: Candidates aligned with Project 2025 anti-abortion agenda.' },
+  { id: 'house_2026', label: 'House 2026\nPickup Targets', cat: 'candidate', size: 14, desc: 'The Heritage Foundation and its partner organizations are targeting dozens of competitive House seats in 2026 to expand the Project 2025 governing coalition. Key targets include seats in Pennsylvania, Michigan, Wisconsin, Arizona, and Georgia. Candidates in these races are vetted through the Heritage Foundation\'s Townhall network, TPUSA campus pipeline, and Federalist Society legal networks. VOTING RIGHTS: Many candidates have pledged to support the SAVE Act and proof-of-citizenship requirements. ABORTION: Candidates are screened for anti-abortion alignment with Project 2025 agenda.' },
+];
+
+const links = [
+  { source: 'trump', target: 'vought', label: 'OMB Director', strength: 3 },
+  { source: 'trump', target: 'miller', label: 'Senior Advisor', strength: 3 },
+  { source: 'trump', target: 'hegseth', label: 'Defense Sec.', strength: 3 },
+  { source: 'trump', target: 'vance', label: 'VP', strength: 3 },
+  { source: 'trump', target: 'bondi', label: 'AG', strength: 3 },
+  { source: 'trump', target: 'johnson', label: 'Legislative ally', strength: 2 },
+  { source: 'trump', target: 'navarro', label: 'Trade Advisor', strength: 2 },
+  { source: 'trump', target: 'agenda47', label: 'Policy platform', strength: 2 },
+  { source: 'trump', target: 'p2025', label: 'Policy implemented', strength: 3 },
+  { source: 'trump', target: 'faith_office', label: 'Created', strength: 2 },
+  { source: 'trump', target: 'az_2026', label: 'Endorsed candidate', strength: 2 },
+  { source: 'vought', target: 'cra', label: 'Founded', strength: 3 },
+  { source: 'vought', target: 'p2025', label: 'Key architect', strength: 3 },
+  { source: 'vought', target: 'claremont', label: 'Ideological ally', strength: 2 },
+  { source: 'miller', target: 'afl', label: 'Founded', strength: 3 },
+  { source: 'miller', target: 'p2025', label: 'Advisory board', strength: 2 },
+  { source: 'hegseth', target: 'nar', label: 'Connected to', strength: 2 },
+  { source: 'white_faith', target: 'faith_office', label: 'Leads', strength: 3 },
+  { source: 'white_faith', target: 'afpi', label: 'Chairs Center', strength: 2 },
+  { source: 'white_faith', target: 'nar', label: 'Connected to', strength: 2 },
+  { source: 'bondi', target: 'faith_office', label: 'Anti-Christian bias task force', strength: 2 },
+  { source: 'johnson', target: 'nar', label: 'Connected to', strength: 2 },
+  { source: 'p2025', target: 'heritage', label: 'Created by', strength: 3 },
+  { source: 'p2025', target: 'claremont', label: 'Key contributor', strength: 3 },
+  { source: 'p2025', target: 'adf', label: 'Partner org', strength: 2 },
+  { source: 'p2025', target: 'tpusa', label: 'Partner org', strength: 2 },
+  { source: 'p2025', target: 'mfl', label: 'Partner org', strength: 2 },
+  { source: 'p2025', target: 'liberty', label: 'Partner org', strength: 2 },
+  { source: 'p2025', target: 'hillsdale', label: 'Partner org', strength: 2 },
+  { source: 'p2025', target: 'cpi', label: 'Advisory board', strength: 2 },
+  { source: 'p2025', target: 'frc', label: 'Partner org', strength: 2 },
+  { source: 'p2025', target: 'dof', label: 'Signed on', strength: 2 },
+  { source: 'p2025', target: 'afl', label: 'Advisory board', strength: 2 },
+  { source: 'p2025', target: 'cra', label: 'Parallel effort', strength: 2 },
+  { source: 'p2025', target: 'agenda47', label: 'Aligned goals', strength: 2 },
+  { source: 'heritage', target: 'roberts_k', label: 'Led by', strength: 3 },
+  { source: 'heritage', target: 'donors_trust', label: 'Funded by', strength: 2 },
+  { source: 'leo', target: 'fed_soc', label: 'Co-chairs', strength: 3 },
+  { source: 'leo', target: 'marble', label: 'Controls', strength: 3 },
+  { source: 'leo', target: '85fund', label: 'Controls', strength: 3 },
+  { source: 'leo', target: 'jcn', label: 'Founded', strength: 3 },
+  { source: 'leo', target: 'teneo', label: 'Founded', strength: 3 },
+  { source: 'leo', target: 'trump', label: 'Judicial advisor T1', strength: 2 },
+  { source: 'seid', target: 'marble', label: '$1.6B donation', strength: 3 },
+  { source: 'marble', target: '85fund', label: 'Funds', strength: 3 },
+  { source: '85fund', target: 'donors_trust', label: '$92M 2022', strength: 3 },
+  { source: 'donors_trust', target: 'afl', label: '$21M 2022', strength: 2 },
+  { source: 'donors_trust', target: 'cpi', label: 'Funded', strength: 2 },
+  { source: 'donors_trust', target: 'teneo', label: 'Funded', strength: 2 },
+  { source: 'donors_trust', target: 'p2025', label: 'Funded orgs', strength: 2 },
+  { source: 'fed_soc', target: 'trump', label: 'Judicial nominations', strength: 2 },
+  { source: 'jcn', target: 'p2025', label: 'Connected via Leo', strength: 1 },
+  { source: 'koch', target: 'p2025', label: 'Funded', strength: 2 },
+  { source: 'koch', target: 'trump', label: 'Political accommodation', strength: 2 },
+  { source: 'claremont', target: 'ryan_williams', label: 'President', strength: 3 },
+  { source: 'claremont', target: 'anton', label: 'Fellow', strength: 2 },
+  { source: 'claremont', target: 'eastman', label: 'Fellow', strength: 2 },
+  { source: 'claremont', target: 'yenor', label: 'Washington Fellow', strength: 2 },
+  { source: 'claremont', target: 'sacr', label: '$26K + fiscal sponsor', strength: 2 },
+  { source: 'ryan_williams', target: 'sacr', label: 'Founding board member', strength: 3 },
+  { source: 'haywood', target: 'sacr', label: 'Founded and funded', strength: 3 },
+  { source: 'haywood', target: 'claremont', label: '$50K donation', strength: 2 },
+  { source: 'yenor', target: 'sacr', label: 'Advises and lodge head', strength: 2 },
+  { source: 'anton', target: 'haywood', label: 'Podcast collaboration', strength: 1 },
+  { source: 'eastman', target: 'trump', label: 'Jan 6 memo author', strength: 2 },
+  { source: 'afpi', target: 'p2025', label: 'Parallel effort', strength: 2 },
+  { source: 'nar', target: 'faith_office', label: 'Influences', strength: 2 },
+  { source: 'nar', target: 'p2025', label: 'Aligned vision', strength: 1 },
+  { source: 'cpi', target: 'heritage', label: 'Partner', strength: 1 },
+  { source: 'hawley', target: 'heritage', label: 'Staffers contributed to P2025 / speaking', strength: 3 },
+  { source: 'hawley', target: 'p2025', label: 'Staffers listed as contributors', strength: 3 },
+  { source: 'hawley', target: 'trump', label: 'Legislative ally / Jan 6 objector', strength: 2 },
+  { source: 'hawley', target: 'claremont', label: 'NatCon conferences / ideological ally', strength: 1 },
+  { source: 'cruz', target: 'heritage', label: 'Staffer contributed / events', strength: 2 },
+  { source: 'cruz', target: 'p2025', label: 'Staffer listed as contributor', strength: 2 },
+  { source: 'cruz', target: 'trump', label: 'Legislative ally', strength: 2 },
+  { source: 'cruz', target: 'fed_soc', label: 'Federalist Society aligned', strength: 1 },
+  { source: 'cotton', target: 'heritage', label: 'Speaking engagements / policy alignment', strength: 2 },
+  { source: 'cotton', target: 'trump', label: 'Legislative ally', strength: 2 },
+  { source: 'cotton', target: 'adf', label: 'ADF-aligned litigation support', strength: 1 },
+  { source: 'scott', target: 'heritage', label: '5-part video series partnership 2021', strength: 2 },
+  { source: 'scott', target: 'trump', label: 'Legislative ally', strength: 2 },
+  { source: 'scott', target: 'p2025', label: 'Policy alignment', strength: 1 },
+  { source: 'mtg', target: 'tpusa', label: 'Speaker at TPUSA events', strength: 2 },
+  { source: 'mtg', target: 'trump', label: 'Close personal ally', strength: 3 },
+  { source: 'mtg', target: 'nar', label: 'Christian nationalist ideology', strength: 2 },
+  { source: 'mtg', target: 'agenda47', label: 'Campaign surrogate', strength: 2 },
+  { source: 'gaetz', target: 'trump', label: 'Nominated as AG', strength: 3 },
+  { source: 'gaetz', target: 'tpusa', label: 'TPUSA speaker and ally', strength: 2 },
+  { source: 'gaetz', target: 'afl', label: 'America First Legal adjacent', strength: 1 },
+  { source: 'fischer', target: 'heritage', label: 'Heritage Foundation event participant', strength: 1 },
+  { source: 'fischer', target: 'trump', label: 'Legislative ally', strength: 1 },
+  { source: 'schweikert', target: 'heritage', label: 'Heritage Foundation event participant', strength: 1 },
+  { source: 'schweikert', target: 'p2025', label: 'Policy alignment', strength: 1 },
+  { source: 'banks', target: 'heritage', label: 'Alt-budget praised by Kevin Roberts', strength: 2 },
+  { source: 'banks', target: 'p2025', label: 'RSC budget aligned with P2025', strength: 2 },
+  { source: 'banks', target: 'trump', label: 'Trump-endorsed', strength: 2 },
+  { source: 'eric_schmitt', target: 'adf', label: 'ADF legal collaboration as MO AG', strength: 2 },
+  { source: 'eric_schmitt', target: 'heritage', label: 'Heritage Foundation aligned', strength: 1 },
+  { source: 'eric_schmitt', target: 'trump', label: 'Legislative ally', strength: 2 },
+  { source: 'paxton', target: 'adf', label: 'Co-litigated ADF cases as TX AG', strength: 3 },
+  { source: 'paxton', target: 'heritage', label: 'Heritage Foundation aligned', strength: 2 },
+  { source: 'paxton', target: 'p2025', label: 'Movement candidate', strength: 2 },
+  { source: 'paxton', target: 'donors_trust', label: 'Donor network overlap', strength: 1 },
+  { source: 'paxton', target: 'trump', label: 'Trump movement candidate', strength: 2 },
+  { source: 'paxton', target: 'afl', label: 'America First Legal coordination', strength: 1 },
+  { source: 'hunt_w', target: 'trump', label: 'Trump loyalist', strength: 2 },
+  { source: 'hunt_w', target: 'afpi', label: 'AFPI policy framework', strength: 1 },
+  { source: 'green_mark', target: 'heritage', label: 'Heritage Foundation aligned', strength: 2 },
+  { source: 'green_mark', target: 'p2025', label: 'Homeland Security alignment', strength: 2 },
+  { source: 'green_mark', target: 'trump', label: 'Trump ally', strength: 2 },
+  { source: 'whatley', target: 'trump', label: 'RNC Chair under Trump / endorsed', strength: 3 },
+  { source: 'whatley', target: 'agenda47', label: 'Ran RNC during Agenda 47 campaign', strength: 2 },
+  { source: 'whatley', target: 'tpusa', label: 'Movement political network', strength: 1 },
+  { source: 'moore_nc', target: 'heritage', label: 'Heritage model legislation as Speaker', strength: 2 },
+  { source: 'moore_nc', target: 'p2025', label: 'P2025-aligned education policy', strength: 1 },
+  { source: 'az_2026', target: 'trump', label: 'Endorsed by Trump', strength: 3 },
+  { source: 'az_2026', target: 'tpusa', label: 'TPUSA network', strength: 2 },
+  { source: 'az_2026', target: 'heritage', label: 'Heritage Foundation aligned', strength: 1 },
+  { source: 'va_2026', target: 'trump', label: 'Trump aligned', strength: 1 },
+  { source: 'va_2026', target: 'p2025', label: 'P2025 aligned', strength: 1 },
+  { source: 'house_2026', target: 'heritage', label: 'Vetted by Heritage network', strength: 2 },
+  { source: 'house_2026', target: 'tpusa', label: 'TPUSA pipeline', strength: 2 },
+  { source: 'house_2026', target: 'p2025', label: 'P2025 policy agenda', strength: 2 },
+  { source: 'berg_nd', target: 'heritage', label: 'Heritage aligned', strength: 1 },
+  { source: 'berg_nd', target: 'trump', label: 'MAGA aligned', strength: 1 },
+  { source: 'mn_2026', target: 'heritage', label: 'Heritage targets MN voting laws', strength: 2 },
+  { source: 'mn_2026', target: 'p2025', label: 'P2025 agenda', strength: 1 },
+  { source: 'lahue', target: 'heritage', label: 'Heritage aligned', strength: 1 },
+  { source: 'lahue', target: 'p2025', label: 'P2025 targets AK RCV', strength: 2 },
+];
+
+const COLORS = {
+  admin:        '#e74c3c',
+  'think-tank': '#3498db',
+  legal:        '#9b59b6',
+  funding:      '#f1c40f',
+  religious:    '#2ecc71',
+  political:    '#e67e22',
+  person:       '#ecf0f1',
+  congress:     '#00b4d8',
+  candidate:    '#ff6b6b',
+};
+
+// Build adjacency
+const adjacency = {};
+links.forEach(l => {
+  if (!adjacency[l.source]) adjacency[l.source] = [];
+  if (!adjacency[l.target]) adjacency[l.target] = [];
+  adjacency[l.source].push(l.target);
+  adjacency[l.target].push(l.source);
+});
+const nodeMap = {};
+nodes.forEach(n => nodeMap[n.id] = n);
+
+// Parse desc into sections
+const SECTIONS = [
+  {k:'ANTI-DEMOCRATIC:',           cls:'dh-antidem',  label:'⚠ Anti-Democratic',         flag:'flag-antidem',  ftxt:'⚠ Anti-Democratic'},
+  {k:'WHITE NATIONALIST TIES:',    cls:'dh-white',    label:'◈ White Nationalist Ties',   flag:'flag-white',    ftxt:'◈ White Nationalist Ties'},
+  {k:'WHITE NATIONALIST ADJACENT:',cls:'dh-white',    label:'◈ White Nationalist Adjacent',flag:'flag-white',   ftxt:'◈ White Nationalist Adjacent'},
+  {k:'WHITE NATIONALIST:',         cls:'dh-white',    label:'◈ White Nationalist',        flag:'flag-white',    ftxt:'◈ White Nationalist'},
+  {k:'ABORTION:',                  cls:'dh-abortion', label:'✦ Abortion / Repro Rights',  flag:'flag-abortion', ftxt:'✦ Anti-Abortion'},
+  {k:"WOMEN'S RIGHTS:",            cls:'dh-women',    label:"♀ Women's Rights",           flag:'flag-women',    ftxt:"♀ Anti-Women's Rights"},
+  {k:'VOTING RIGHTS:',             cls:'dh-voting',   label:'⬤ Voting Rights',            flag:'flag-voting',   ftxt:'⬤ Voting Rights'},
+  {k:'DOMINIONISM:',               cls:'dh-nar',      label:'✝ Dominionism',              flag:null,            ftxt:null},
+  {k:'NAR CONNECTIONS:',           cls:'dh-nar',      label:'✝ NAR Connections',          flag:null,            ftxt:null},
+  {k:'NAR:',                       cls:'dh-nar',      label:'✝ NAR',                      flag:null,            ftxt:null},
+  {k:'LGBTQ+:',                    cls:'dh-lgbtq',    label:'◆ LGBTQ+ Positions',         flag:null,            ftxt:null},
+];
+
+function showPanel(node) {
+  const panel = document.getElementById('info-panel');
+  document.getElementById('panel-title').textContent = node.label.replace(/\n/g,' ');
+  const tag = document.getElementById('panel-tag');
+  tag.textContent = node.cat.toUpperCase().replace('-',' ');
+  tag.style.background = COLORS[node.cat] + '33';
+  tag.style.color = COLORS[node.cat];
+  tag.style.border = '1px solid ' + COLORS[node.cat];
+
+  const raw = node.desc || '';
+  const kpos = SECTIONS.map(s => ({...s, pos: raw.indexOf(s.k)})).filter(s => s.pos >= 0).sort((a,b) => a.pos - b.pos);
+
+  const flagsEl = document.getElementById('panel-flags');
+  flagsEl.innerHTML = '';
+  const seenFlags = new Set();
+  kpos.forEach(s => {
+    if (s.flag && !seenFlags.has(s.flag)) {
+      seenFlags.add(s.flag);
+      const sp = document.createElement('span');
+      sp.className = 'flag ' + s.flag;
+      sp.textContent = s.ftxt;
+      flagsEl.appendChild(sp);
+    }
+  });
+
+  const descEl = document.getElementById('panel-desc');
+  descEl.innerHTML = '';
+  const parts = [];
+  if (kpos.length === 0) {
+    parts.push({cls:'dh-general', label:'', text: raw});
+  } else {
+    if (kpos[0].pos > 0) parts.push({cls:'dh-general', label:'', text: raw.substring(0, kpos[0].pos).trim()});
+    kpos.forEach((s, i) => {
+      const start = s.pos + s.k.length;
+      const end = i + 1 < kpos.length ? kpos[i+1].pos : raw.length;
+      parts.push({cls: s.cls, label: s.label, text: raw.substring(start, end).trim()});
+    });
+  }
+  parts.forEach(p => {
+    if (!p.text) return;
+    const div = document.createElement('div');
+    div.className = 'desc-section';
+    if (p.label) {
+      const h = document.createElement('div');
+      h.className = 'desc-header ' + p.cls;
+      h.textContent = p.label;
+      div.appendChild(h);
+    }
+    const para = document.createElement('p');
+    para.textContent = p.text;
+    div.appendChild(para);
+    descEl.appendChild(div);
+  });
+
+  const connList = document.getElementById('panel-conn-list');
+  connList.innerHTML = '';
+  (adjacency[node.id] || []).forEach(cid => {
+    const cn = nodeMap[cid];
+    if (!cn) return;
+    const lnk = links.find(l => {
+      const s = typeof l.source === 'object' ? l.source.id : l.source;
+      const t = typeof l.target === 'object' ? l.target.id : l.target;
+      return (s === node.id && t === cid) || (t === node.id && s === cid);
+    });
+    const div = document.createElement('div');
+    div.className = 'conn-item';
+    div.style.color = COLORS[cn.cat];
+    div.textContent = cn.label.replace(/\n/g,' ') + (lnk ? ' — ' + lnk.label : '');
+    div.onclick = () => {
+      closePanel();
+      Graph.centerAt(cn.x, cn.y, cn.z, 600);
+      setTimeout(() => showPanel(cn), 650);
+    };
+    connList.appendChild(div);
+  });
+
+  panel.classList.add('visible');
+}
+
+function closePanel() {
+  document.getElementById('info-panel').classList.remove('visible');
+  highlightedId = null;
+  Graph.nodeColor(n => COLORS[n.cat]);
+  Graph.linkColor(l => {
+    const s = typeof l.source === 'object' ? nodeMap[l.source.id] : nodeMap[l.source];
+    return s ? COLORS[s.cat] + '55' : '#ffffff22';
+  });
+  Graph.linkOpacity(0.35);
+}
+
+let rotating = true;
+let showLabels = true;
+let highlightedId = null;
+let autoRotateAngle = 0;
+
+function toggleRotate() {
+  rotating = !rotating;
+  const btn = document.getElementById('rotate-btn');
+  btn.textContent = rotating ? '⟳ Rotating' : '⟳ Paused';
+  btn.classList.toggle('active', rotating);
+}
+
+function toggleLabels() {
+  showLabels = !showLabels;
+  Graph.nodeThreeObject(n => makeNodeObject(n));
+}
+
+function resetCamera() {
+  Graph.cameraPosition({ x: 0, y: 0, z: 600 }, { x: 0, y: 0, z: 0 }, 800);
+}
+
+function makeNodeObject(n) {
+  const group = new THREE.Group();
+  const col = COLORS[n.cat];
+  const r = n.size * 0.6 + 2;
+
+  // Core sphere
+  const geo = new THREE.SphereGeometry(r, 16, 12);
+  const mat = new THREE.MeshLambertMaterial({
+    color: col,
+    transparent: true,
+    opacity: 0.88,
+  });
+  const mesh = new THREE.Mesh(geo, mat);
+  group.add(mesh);
+
+  // Outer glow ring
+  const ringGeo = new THREE.SphereGeometry(r * 1.35, 16, 12);
+  const ringMat = new THREE.MeshBasicMaterial({
+    color: col,
+    transparent: true,
+    opacity: 0.06,
+    wireframe: false,
+    side: THREE.BackSide,
+  });
+  group.add(new THREE.Mesh(ringGeo, ringMat));
+
+  // Label
+  if (showLabels) {
+    const sprite = new SpriteText(n.label.replace(/\n/g, ' '));
+    sprite.color = col;
+    sprite.textHeight = n.size > 25 ? 3.5 : 2.8;
+    sprite.fontFace = 'IBM Plex Mono';
+    sprite.fontWeight = n.size > 25 ? '500' : '300';
+    sprite.backgroundColor = 'rgba(5,5,10,0.55)';
+    sprite.padding = 1.5;
+    sprite.position.set(0, r + 5, 0);
+    group.add(sprite);
+  }
+
+  return group;
+}
+
+// Build graph data
+const graphData = {
+  nodes: nodes.map(n => ({ ...n })),
+  links: links.map(l => ({ ...l }))
+};
+
+const Graph = ForceGraph3D({ controlType: 'orbit' })(document.getElementById('graph'))
+  .width(window.innerWidth)
+  .height(window.innerHeight)
+  .backgroundColor('#050508')
+  .graphData(graphData)
+  .nodeId('id')
+  .nodeLabel('')
+  .nodeThreeObject(n => makeNodeObject(n))
+  .nodeThreeObjectExtend(false)
+  .linkSource('source')
+  .linkTarget('target')
+  .linkColor(l => {
+    const s = nodeMap[typeof l.source === 'object' ? l.source.id : l.source];
+    return s ? COLORS[s.cat] + '66' : '#ffffff33';
+  })
+  .linkWidth(l => l.strength * 0.4)
+  .linkOpacity(0.4)
+  .linkDirectionalParticles(l => l.strength >= 3 ? 2 : l.strength >= 2 ? 1 : 0)
+  .linkDirectionalParticleWidth(l => l.strength >= 3 ? 1.8 : 1.2)
+  .linkDirectionalParticleColor(l => {
+    const s = nodeMap[typeof l.source === 'object' ? l.source.id : l.source];
+    return s ? COLORS[s.cat] : '#ffffff';
+  })
+  .linkDirectionalParticleSpeed(0.004)
+  .onNodeClick((node) => {
+    highlightedId = node.id;
+
+    // Dim everything except connected
+    const connected = new Set([node.id, ...(adjacency[node.id] || [])]);
+    Graph.nodeColor(n => connected.has(n.id) ? COLORS[n.cat] : COLORS[n.cat] + '22');
+    Graph.linkColor(l => {
+      const s = typeof l.source === 'object' ? l.source.id : l.source;
+      const t = typeof l.target === 'object' ? l.target.id : l.target;
+      const connected2 = s === node.id || t === node.id;
+      const src = nodeMap[s];
+      return connected2
+        ? (src ? COLORS[src.cat] : '#ffffff')
+        : '#ffffff08';
+    });
+    Graph.linkOpacity(0.7);
+
+    // Fly camera toward node
+    const dist = 120;
+    const { x, y, z } = node;
+    Graph.cameraPosition(
+      { x: x + dist, y: y + dist * 0.5, z: z + dist },
+      { x, y, z },
+      800
+    );
+
+    showPanel(node);
+  })
+  .onBackgroundClick(() => closePanel());
+
+// Add ambient + directional lighting
+const ambientLight = new THREE.AmbientLight(0x222244, 1.5);
+Graph.scene().add(ambientLight);
+const dirLight = new THREE.DirectionalLight(0x8888ff, 0.6);
+dirLight.position.set(1, 1, 1);
+Graph.scene().add(dirLight);
+const redLight = new THREE.PointLight(0xe74c3c, 0.4, 800);
+redLight.position.set(-200, 100, 200);
+Graph.scene().add(redLight);
+
+// Add subtle star field background
+const starGeo = new THREE.BufferGeometry();
+const starPositions = [];
+for (let i = 0; i < 1500; i++) {
+  starPositions.push(
+    (Math.random() - 0.5) * 3000,
+    (Math.random() - 0.5) * 3000,
+    (Math.random() - 0.5) * 3000
+  );
+}
+starGeo.setAttribute('position', new THREE.Float32BufferAttribute(starPositions, 3));
+const starMat = new THREE.PointsMaterial({ color: 0x333355, size: 1.2, transparent: true, opacity: 0.6 });
+Graph.scene().add(new THREE.Points(starGeo, starMat));
+
+// Auto-rotate
+Graph.onEngineTick(() => {
+  if (rotating) {
+    autoRotateAngle += 0.0018;
+    const r = 700;
+    const cam = Graph.camera();
+    cam.position.x = r * Math.sin(autoRotateAngle);
+    cam.position.z = r * Math.cos(autoRotateAngle);
+    cam.lookAt(0, 0, 0);
+  }
+});
+
+// Filters
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const cat = btn.dataset.cat;
+    const vis = cat === 'all' ? new Set(nodes.map(n => n.id)) : new Set(nodes.filter(n => n.cat === cat).map(n => n.id));
+    const conn = new Set(vis);
+    if (cat !== 'all') vis.forEach(id => (adjacency[id] || []).forEach(c => conn.add(c)));
+
+    Graph.nodeColor(n => conn.has(n.id) ? COLORS[n.cat] : COLORS[n.cat] + '11');
+    Graph.linkColor(l => {
+      const s = typeof l.source === 'object' ? l.source.id : l.source;
+      const t = typeof l.target === 'object' ? l.target.id : l.target;
+      const active = cat === 'all' || vis.has(s) || vis.has(t);
+      const src = nodeMap[s];
+      return active ? (src ? COLORS[src.cat] + '66' : '#ffffff33') : '#ffffff05';
+    });
+    Graph.linkOpacity(cat === 'all' ? 0.4 : 0.6);
+  });
+});
+
+// Resize
+window.addEventListener('resize', () => {
+  Graph.width(window.innerWidth).height(window.innerHeight);
+});
+
+// Fade out loading screen and hint
+Graph.onEngineStop(() => {
+  document.getElementById('loading').style.transition = 'opacity 0.8s';
+  document.getElementById('loading').style.opacity = '0';
+  setTimeout(() => document.getElementById('loading').style.display = 'none', 900);
+});
+
+// Force stop if takes too long
+setTimeout(() => {
+  document.getElementById('loading').style.transition = 'opacity 0.8s';
+  document.getElementById('loading').style.opacity = '0';
+  setTimeout(() => document.getElementById('loading').style.display = 'none', 900);
+}, 3000);
+
+setTimeout(() => {
+  const hint = document.getElementById('hint');
+  hint.classList.add('fade');
+}, 4000);
+
+// Set initial camera
+Graph.cameraPosition({ x: 0, y: 0, z: 700 });
+</script>
+</body>
+</html>

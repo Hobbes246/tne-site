@@ -1,0 +1,1576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Operation Epic Fury — War Probability Matrix</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=IBM+Plex+Mono:wght@300;400;500&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<style>
+:root {
+  --bg: #080809;
+  --bg2: #0f0f11;
+  --bg3: #141417;
+  --border: #2a2a30;
+  --text: #ddd4c0;
+  --text-dim: #7a7066;
+  --text-bright: #f5ede0;
+  --red: #b8241c;
+  --red-bright: #e03028;
+  --amber: #c87d18;
+  --amber-bright: #f09a20;
+  --green: #1a7a3a;
+  --green-bright: #22a050;
+  --blue: #1a4a7a;
+  --blue-bright: #2a6ab0;
+  --mono: 'IBM Plex Mono', monospace;
+  --serif: 'Playfair Display', Georgia, serif;
+  --body: 'Libre Baskerville', Georgia, serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--body);
+  font-size: 15px;
+  line-height: 1.7;
+  overflow-x: hidden;
+}
+
+/* GRAIN OVERLAY */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.025;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* NAV */
+nav {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  background: rgba(8,8,9,0.95);
+  border-bottom: 1px solid var(--border);
+  z-index: 100;
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+  height: 52px;
+}
+
+.nav-brand {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--red-bright);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.nav-links {
+  display: flex;
+  gap: 2rem;
+  list-style: none;
+}
+
+.nav-links a {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-dim);
+  text-decoration: none;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--text); }
+
+.nav-status {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--amber);
+  letter-spacing: 0.1em;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.nav-status::before {
+  content: '';
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--red-bright);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* HERO */
+.hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 7rem 4rem 4rem;
+  position: relative;
+  border-bottom: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.hero-bg-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--serif);
+  font-size: min(22vw, 260px);
+  font-weight: 900;
+  color: rgba(184,36,28,0.04);
+  pointer-events: none;
+  white-space: nowrap;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  user-select: none;
+}
+
+.hero-eyebrow {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--red-bright);
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  margin-bottom: 1.5rem;
+}
+
+.hero-title {
+  font-family: var(--serif);
+  font-size: clamp(3rem, 7vw, 6.5rem);
+  font-weight: 900;
+  line-height: 0.95;
+  color: var(--text-bright);
+  letter-spacing: -0.02em;
+  margin-bottom: 1rem;
+}
+
+.hero-title em {
+  font-style: italic;
+  color: var(--red-bright);
+}
+
+.hero-subtitle {
+  font-family: var(--body);
+  font-size: 1.05rem;
+  color: var(--text-dim);
+  max-width: 55ch;
+  margin-bottom: 3rem;
+  font-style: italic;
+}
+
+.hero-stats {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0;
+  border: 1px solid var(--border);
+  max-width: 900px;
+}
+
+.stat-box {
+  padding: 1.5rem 1.5rem 1.2rem;
+  border-right: 1px solid var(--border);
+  position: relative;
+}
+.stat-box:last-child { border-right: none; }
+
+.stat-label {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 0.5rem;
+}
+
+.stat-value {
+  font-family: var(--mono);
+  font-size: 2.2rem;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--text-bright);
+}
+
+.stat-value.danger { color: var(--red-bright); }
+.stat-value.warning { color: var(--amber-bright); }
+
+.stat-sub {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text-dim);
+  margin-top: 0.4rem;
+}
+
+.hero-disclaimer {
+  margin-top: 2rem;
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text-dim);
+  letter-spacing: 0.08em;
+  max-width: 700px;
+}
+
+/* SECTIONS */
+section {
+  padding: 5rem 4rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.section-header {
+  display: flex;
+  align-items: baseline;
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.section-num {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  letter-spacing: 0.15em;
+}
+
+.section-title {
+  font-family: var(--serif);
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--text-bright);
+  line-height: 1.1;
+}
+
+.section-desc {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-left: auto;
+  text-align: right;
+  max-width: 28ch;
+}
+
+/* HEATMAP */
+#matrix-section {
+  padding-bottom: 4rem;
+}
+
+.matrix-controls {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.cat-btn {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 0.4rem 1rem;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.cat-btn:hover, .cat-btn.active {
+  border-color: var(--red-bright);
+  color: var(--text-bright);
+  background: rgba(184,36,28,0.08);
+}
+
+#heatmap-container {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+}
+
+.heatmap-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--mono);
+  font-size: 11px;
+  min-width: 900px;
+}
+
+.heatmap-table th {
+  padding: 0.6rem 0.8rem;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+  border-right: 1px solid rgba(42,42,48,0.5);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: var(--text-dim);
+  background: var(--bg2);
+  white-space: nowrap;
+}
+
+.heatmap-table th.th-var {
+  text-align: left;
+  min-width: 220px;
+  position: sticky;
+  left: 0;
+  background: var(--bg2);
+  z-index: 2;
+}
+
+.heatmap-table th.th-cat {
+  text-align: left;
+  min-width: 100px;
+  position: sticky;
+  left: 0;
+  background: var(--bg3);
+  z-index: 2;
+}
+
+.heatmap-table td {
+  padding: 0.45rem 0.7rem;
+  border-bottom: 1px solid rgba(42,42,48,0.4);
+  border-right: 1px solid rgba(42,42,48,0.3);
+  text-align: center;
+  font-size: 11px;
+  vertical-align: middle;
+}
+
+.heatmap-table td.td-var {
+  text-align: left;
+  position: sticky;
+  left: 0;
+  background: var(--bg);
+  z-index: 1;
+  color: var(--text);
+  font-size: 11.5px;
+  padding-left: 1rem;
+  border-right: 1px solid var(--border);
+}
+
+.heatmap-table td.td-cat {
+  text-align: left;
+  position: sticky;
+  left: 0;
+  background: var(--bg3);
+  z-index: 1;
+  color: var(--text-dim);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.7rem 1rem;
+  border-right: 1px solid var(--border);
+  font-weight: 500;
+}
+
+.heatmap-table tr:hover td { filter: brightness(1.2); }
+
+.cell-null {
+  color: var(--text-dim);
+  font-size: 9px;
+}
+
+.col-d9 {
+  border-left: 2px solid rgba(184,36,28,0.4) !important;
+}
+
+/* TREND CHART */
+#trends-section .chart-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.trend-card {
+  border: 1px solid var(--border);
+  padding: 1.5rem;
+  background: var(--bg2);
+}
+
+.trend-card h4 {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 0.8rem;
+}
+
+.trend-card svg { display: block; }
+
+/* TIMELINE */
+.day-entry {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  gap: 2rem;
+  margin-bottom: 2.5rem;
+  position: relative;
+}
+
+.day-entry::before {
+  content: '';
+  position: absolute;
+  left: 119px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--border);
+}
+
+.day-label {
+  padding-top: 0.2rem;
+  text-align: right;
+  padding-right: 2rem;
+}
+
+.day-num {
+  font-family: var(--serif);
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: var(--red-bright);
+  opacity: 0.4;
+  line-height: 1;
+}
+
+.day-date {
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+  display: block;
+  margin-top: 0.2rem;
+}
+
+.day-content {
+  padding-left: 2rem;
+}
+
+.day-headline {
+  font-family: var(--serif);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-bright);
+  margin-bottom: 0.8rem;
+}
+
+.day-events {
+  list-style: none;
+  display: none;
+}
+
+.day-events.open { display: block; }
+
+.day-events li {
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13.5px;
+  color: var(--text);
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 1rem;
+  align-items: start;
+}
+
+.ev-cat {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--amber);
+  white-space: nowrap;
+  margin-top: 2px;
+}
+
+.ev-cat.critical { color: var(--red-bright); }
+.ev-cat.high { color: var(--amber-bright); }
+.ev-cat.medium { color: var(--text-dim); }
+
+.day-toggle {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--red-bright);
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+  transition: opacity 0.2s;
+}
+.day-toggle:hover { opacity: 0.7; }
+
+.day-prob-row {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 0.8rem;
+  flex-wrap: wrap;
+}
+
+.prob-chip {
+  font-family: var(--mono);
+  font-size: 10px;
+  padding: 0.2rem 0.6rem;
+  border: 1px solid;
+}
+
+.prob-chip.up { border-color: var(--red-bright); color: var(--red-bright); }
+.prob-chip.down { border-color: var(--green-bright); color: var(--green-bright); }
+.prob-chip.new { border-color: var(--amber); color: var(--amber); }
+
+/* ACTORS */
+.actor-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+.actor-card {
+  border: 1px solid var(--border);
+  padding: 2rem;
+  background: var(--bg2);
+  position: relative;
+  overflow: hidden;
+}
+
+.actor-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+}
+
+.actor-card.danger::before { background: var(--red-bright); }
+.actor-card.warning::before { background: var(--amber); }
+.actor-card.neutral::before { background: var(--blue-bright); }
+
+.actor-name {
+  font-family: var(--serif);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text-bright);
+  margin-bottom: 0.3rem;
+}
+
+.actor-title {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 1.2rem;
+}
+
+.actor-body {
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--text);
+}
+
+.actor-flags {
+  margin-top: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.flag-item {
+  font-family: var(--mono);
+  font-size: 10px;
+  display: grid;
+  grid-template-columns: 12px 1fr;
+  gap: 0.5rem;
+  align-items: start;
+  color: var(--text-dim);
+}
+
+.flag-item::before {
+  content: '▸';
+  color: var(--amber);
+}
+
+/* POLLING */
+.polling-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+.polling-card {
+  border: 1px solid var(--border);
+  padding: 1.8rem;
+  background: var(--bg2);
+}
+
+.polling-card h3 {
+  font-family: var(--serif);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-bright);
+  margin-bottom: 1rem;
+}
+
+.poll-bar-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.poll-row {
+  display: grid;
+  grid-template-columns: 160px 1fr 50px;
+  gap: 0.8rem;
+  align-items: center;
+}
+
+.poll-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-dim);
+  letter-spacing: 0.08em;
+}
+
+.poll-bar-wrap {
+  background: rgba(42,42,48,0.6);
+  height: 6px;
+  position: relative;
+}
+
+.poll-bar-fill {
+  height: 100%;
+  transition: width 0.8s ease;
+}
+
+.poll-bar-fill.support { background: var(--red-bright); }
+.poll-bar-fill.oppose { background: var(--green-bright); }
+
+.poll-pct {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text);
+  text-align: right;
+}
+
+/* METHODOLOGY */
+.method-box {
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--amber);
+  padding: 1.5rem 2rem;
+  background: rgba(200,125,24,0.04);
+  margin-top: 2rem;
+  font-size: 13px;
+  color: var(--text-dim);
+  font-style: italic;
+}
+
+/* FOOTER */
+footer {
+  padding: 3rem 4rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--mono);
+  font-size: 9px;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+}
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); }
+::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .hero { padding: 6rem 2rem 3rem; }
+  .hero-stats { grid-template-columns: repeat(3, 1fr); }
+  section { padding: 4rem 2rem; }
+  .actor-grid { grid-template-columns: 1fr; }
+  .polling-grid { grid-template-columns: 1fr; }
+  #trends-section .chart-row { grid-template-columns: 1fr; }
+  nav { padding: 0 1rem; }
+  .nav-links { display: none; }
+}
+
+/* FADE IN */
+.fade-in {
+  opacity: 0;
+  transform: translateY(16px);
+  animation: fadeIn 0.6s forwards;
+}
+@keyframes fadeIn {
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-in:nth-child(2) { animation-delay: 0.1s; }
+.fade-in:nth-child(3) { animation-delay: 0.2s; }
+.fade-in:nth-child(4) { animation-delay: 0.3s; }
+.fade-in:nth-child(5) { animation-delay: 0.4s; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">OPERATION EPIC FURY</div>
+  <ul class="nav-links">
+    <li><a href="#matrix-section">Matrix</a></li>
+    <li><a href="#trends-section">Trends</a></li>
+    <li><a href="#timeline-section">Timeline</a></li>
+    <li><a href="#actors-section">Actors</a></li>
+    <li><a href="#polling-section">Polling</a></li>
+    <li><a href="/index.html" style="color:var(--amber);border-left:1px solid var(--border);padding-left:1rem;margin-left:0.5rem;">&#8592; The Network Exposed</a></li>
+  </ul>
+  <div class="nav-status">LIVE · DAY 26 · MAR 26, 2026</div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-bg-text">EPIC</div>
+  <div class="hero-eyebrow fade-in">Independent Probability Analysis · Feb 28 – Mar 26, 2026</div>
+  <h1 class="hero-title fade-in">Operation<br><em>Epic Fury</em></h1>
+  <p class="hero-subtitle fade-in">A structured probability matrix tracking 54 variables across 12 checkpoints. Built from open-source intelligence, academic malignant narcissism research, and military doctrine analysis.</p>
+  <div class="hero-stats fade-in">
+    <div class="stat-box">
+      <div class="stat-label">War Day</div>
+      <div class="stat-value danger">26</div>
+      <div class="stat-sub">Feb 28 – Mar 26</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">US Troops in Region</div>
+      <div class="stat-value danger">50,000+</div>
+      <div class="stat-sub">82nd Airborne deploying</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">WW3 Prob. (Def. C)</div>
+      <div class="stat-value danger">80%</div>
+      <div class="stat-sub">Four in five probability</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Quagmire Prob.</div>
+      <div class="stat-value danger">82%</div>
+      <div class="stat-sub">Near-certainty; base case</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">Ceasefire 30d</div>
+      <div class="stat-value warning">28%</div>
+      <div class="stat-sub">↓14 pts; plan rejected</div>
+    </div>
+  </div>
+  <div class="hero-disclaimer fade-in">
+    ± 8–12 pt confidence interval · MN = Malignant Narcissism Research Layer applied to decision-maker analysis · Not affiliated with any government or intelligence agency.
+    All assessments are independent analytical estimates based on open-source reporting.
+  </div>
+</div>
+
+<!-- PROBABILITY MATRIX -->
+<section id="matrix-section">
+  <div class="section-header">
+    <span class="section-num">01</span>
+    <h2 class="section-title">Probability Matrix</h2>
+    <span class="section-desc">54 variables · 21 checkpoints · ±8–12 pt CI</span>
+  </div>
+  <div class="matrix-controls">
+    <button class="cat-btn active" data-cat="all">All Variables</button>
+    <button class="cat-btn" data-cat="MILITARY">Military</button>
+    <button class="cat-btn" data-cat="REGIONAL">Regional</button>
+    <button class="cat-btn" data-cat="NUCLEAR">Nuclear</button>
+    <button class="cat-btn" data-cat="CYBER">Cyber</button>
+    <button class="cat-btn" data-cat="ECONOMIC">Economic</button>
+    <button class="cat-btn" data-cat="POLITICAL">Political</button>
+  </div>
+  <div id="heatmap-container">
+    <table class="heatmap-table" id="heatmap"></table>
+  </div>
+</section>
+
+<!-- TRENDS -->
+<section id="trends-section">
+  <div class="section-header">
+    <span class="section-num">02</span>
+    <h2 class="section-title">Trajectory Analysis</h2>
+    <span class="section-desc">Key variable trends Day 1 → Day 9</span>
+  </div>
+  <div class="chart-row">
+    <div class="trend-card">
+      <h4>Conflict Duration Risk</h4>
+      <svg id="chart-duration" width="100%" height="200"></svg>
+    </div>
+    <div class="trend-card">
+      <h4>World War Probability</h4>
+      <svg id="chart-ww3" width="100%" height="200"></svg>
+    </div>
+    <div class="trend-card">
+      <h4>Great Power Involvement</h4>
+      <svg id="chart-greatpower" width="100%" height="200"></svg>
+    </div>
+    <div class="trend-card">
+      <h4>Economic Cascade</h4>
+      <svg id="chart-economic" width="100%" height="200"></svg>
+    </div>
+  </div>
+</section>
+
+<!-- TIMELINE -->
+<section id="timeline-section">
+  <div class="section-header">
+    <span class="section-num">03</span>
+    <h2 class="section-title">War Timeline</h2>
+    <span class="section-desc">Day-by-day event record</span>
+  </div>
+  <div id="timeline-container"></div>
+</section>
+
+<!-- ACTORS -->
+<section id="actors-section">
+  <div class="section-header">
+    <span class="section-num">04</span>
+    <h2 class="section-title">Decision-Maker Profiles</h2>
+    <span class="section-desc">MN Framework Applied</span>
+  </div>
+  <div class="actor-grid" id="actor-grid"></div>
+</section>
+
+<!-- POLLING -->
+<section id="polling-section">
+  <div class="section-header">
+    <span class="section-num">05</span>
+    <h2 class="section-title">The 90% Claim</h2>
+    <span class="section-desc">Public opinion vs. Trump information environment</span>
+  </div>
+  <div class="polling-grid" id="polling-grid"></div>
+  <div class="method-box">
+    <strong>Methodology note:</strong> Tucker Carlson reported Trump is being shown internal polls claiming 90% public support for the war. No credible public polling supports this figure. The aggregate of all high-quality surveys (NPR/PBS/Marist, CNN/SSRS, Economist/YouGov, Angus Reid) shows 38–44% support, 49–59% opposition. The 90% figure likely derives from MAGA-base-only filtering, Republican-only internals, or leading-question methodology. A president believing 90% support has no self-correcting psychological incentive to seek an exit — combined with the NIC report confirming war aims are unachievable, this constitutes a catastrophic information environment failure.
+  </div>
+</section>
+
+<footer>
+  <span>Operation Epic Fury · Independent Probability Analysis · Updated Day 27 · March 27, 2026</span>
+  <span>54 Variables · 12 Checkpoints · Open-Source Intelligence Only</span>
+</footer>
+
+<script>
+// ========== DATA ==========
+const CHECKPOINTS = ['D1 Init','D1 Rev','D2 AM','D2 PM','D3 AM','D3 MN','D4','D5','D6','D7','D8','D9','D10','D11','D12','D13','D14','D15','D16-19','D20-23','D24-26'];
+const SHORT_CPS = ['1i','1r','2a','2p','3a','3n','4','5','6','7','8','9','10','11','12','13','14','15','16-19','20-23','24-26'];
+
+const MATRIX_DATA = [
+  // MILITARY
+  {cat:'MILITARY',name:'Conflict >7 days',s:[88,91,91,91,91,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99],notes:'Confirmed locked.'},
+  {cat:'MILITARY',name:'Conflict >30 days',s:[55,68,68,68,75,82,87,91,92,93,93,93,93,93,93,93,93,93,95,96,97],notes:'Lebanon ground war + no exit.'},
+  {cat:'MILITARY',name:'Conflict >60 days',s:[35,48,48,48,48,50,56,64,80,82,84,85,88,90,91,92,93,94,95,96,97],notes:'No diplomatic exit.'},
+  {cat:'MILITARY',name:'Iranian cmd fragmented',s:[72,93,78,62,85,88,88,85,80,75,88,92,88,85,87,90,90,92,90,89,88],notes:'Presidential + military fragmentation confirmed.'},
+  {cat:'MILITARY',name:'US mass-casualty (10+ KIA)',s:[32,42,42,48,55,72,78,78,84,86,87,88,90,91,92,98,99,99,99,99,99],notes:'6 KIA confirmed.'},
+  {cat:'MILITARY',name:'US ground forces deployed',s:[12,18,22,30,38,48,55,58,72,72,75,75,75,75,76,78,82,84,88,90,92],notes:'Kurdish op confirmed.'},
+  {cat:'MILITARY',name:'Israeli casualties exceed Jun\'25',s:[45,55,55,72,88,90,90,92,93,94,95,95],notes:'Lebanon ground war.'},
+  {cat:'MILITARY',name:'Iranian naval capacity eliminated',s:[null,null,null,null,null,null,null,88,92,94,95,95,96,96,97,97,97,97,98,98,98,99],notes:'IRIS Shahid Bagheri struck.'},
+  {cat:'MILITARY',name:'Kurdish proxy forces → Iran',s:[null,null,null,null,null,null,null,38,72,72,75,75,75,75,76,78,78,80,80,81,82,83],notes:'CIA-armed. Israel air support.'},
+  {cat:'MILITARY',name:'Special forces seize HEU',s:[null,null,null,null,null,null,null,null,null,null,null,25,28,28,35,38,38,40,44,46,48,50],notes:'Axios: US-Israel discussed. Most dangerous single op.'},
+  // REGIONAL
+  {cat:'REGIONAL',name:'Full proxy network activation',s:[85,93,93,96,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99],notes:'Confirmed.'},
+  {cat:'REGIONAL',name:'Strait of Hormuz disrupted',s:[75,85,96,96,97,97,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99],notes:'CONFIRMED CLOSED.'},
+  {cat:'REGIONAL',name:'Gulf state basing crisis',s:[38,45,55,55,62,62,62,65,68,70,72,72,75,76,78,80,82,84,86,88,90,92],notes:'Kuwait, Bahrain, Qatar.'},
+  {cat:'REGIONAL',name:'Turkey/NATO involvement',s:[40,62,62,62,62,62,62,72,72,74,76,76,82,83,84,85,86,88,88,90,92,93],notes:'Azerbaijan struck.'},
+  {cat:'REGIONAL',name:'NATO Article 5',s:[null,null,null,null,null,22,28,38,42,44,44,20,32,33,34,35,36,40,41,42,42,43],notes:'Slowly rising.'},
+  {cat:'REGIONAL',name:'Non-ME power involvement',s:[18,25,25,25,35,38,45,55,70,82,82,82,84,86,88,90,92,93,94,95,96,97],notes:'Russia CONFIRMED.'},
+  {cat:'REGIONAL',name:'Russia active support',s:[42,52,52,52,52,55,58,62,82,92,75,75,80,78,79,80,80,80,82,84,84,87],notes:'CONFIRMED targeting intel.'},
+  {cat:'REGIONAL',name:'Russia confirmed co-belligerent',s:[null,null,null,null,null,null,null,null,null,72,75,75,80,78,79,80,80,80,82,83,84,87],notes:'CONFIRMED: intel + drone supply. Kallas G7.'},
+  {cat:'REGIONAL',name:'Western alliance fracture',s:[null,null,null,null,null,null,38,52,58,62,65,65,68,70,70,71,72,74,76,77,78,80],notes:'Italy FM condemned US.'},
+  {cat:'REGIONAL',name:'Lebanon full-scale ground war',s:[null,null,null,null,null,null,null,null,55,68,72,75,77,78,80,82,84,86,88,90,92,93],notes:'394 killed. IDF soldiers killed.'},
+  {cat:'REGIONAL',name:'Gulf interceptor collapse',s:[null,null,null,null,null,null,null,35,40,42,48,52,55,58,60,62,65,67,70,72,74,76],notes:'Math unsustainable.'},
+  {cat:'REGIONAL',name:'Desalination infrastructure war',s:[null,null,null,null,null,null,null,null,null,null,null,55,60,62,64,65,66,68,70,71,72,73],notes:'Bahrain plant struck. Tit-for-tat.'},
+  {cat:'REGIONAL',name:'Azerbaijan entering conflict',s:[null,null,null,null,null,null,null,null,22,22,28,28,30,30,30,30,30,30,30,30,30],notes:'IRGC C-4 plot confirmed.'},
+  {cat:'REGIONAL',name:'China ceasefire mediation',s:[null,null,null,null,null,null,null,null,null,null,null,38,40,42,45,46,48,48,48,48,46,48],notes:'Wang Yi explicit call. Xi-Trump summit.'},
+  // NUCLEAR
+  {cat:'NUCLEAR',name:'Iranian nuclear declaration',s:[12,9,9,9,9,9,9,7,7,7,7,7,7,7,7,8,9,9,10,11,12,12],notes:'IAEA: no nuclear facilities damaged.'},
+  {cat:'NUCLEAR',name:'Radiological incident',s:[8,10,10,10,10,10,10,8,8,8,8,8,8,8,8,8,8,8,8,8,9],notes:'No change.'},
+  {cat:'NUCLEAR',name:'Nuclear use (any party)',s:[2.5,3,3,3,3,4,4,3,3,4,4,4,4,4,4,5,5,5,6,6,6,7],notes:'Slight uptick: Russia involvement.'},
+  // CYBER
+  {cat:'CYBER',name:'Cyber — nuisance level',s:[96,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97,97],notes:'Confirmed ongoing.'},
+  {cat:'CYBER',name:'Cyber — significant disruption',s:[62,68,68,68,68,72,72,78,78,78,80,80,80,82,82,84,84,85,86,87,88,89],notes:'Holding.'},
+  {cat:'CYBER',name:'Cyber — major disruption',s:[28,35,35,35,35,42,42,48,68,68,68,68,68,70,70,72,72,73,74,75,76,77],notes:'CISA 38% staffing.'},
+  {cat:'CYBER',name:'Cyber — catastrophic',s:[8,10,10,10,10,14,14,16,26,26,26,26,28,30,30,32,32,33,34,35,36,37],notes:'CISA director failed polygraph.'},
+  {cat:'CYBER',name:'Iran internet total blackout',s:[null,null,null,null,null,null,null,99,99,99,99,99,99,99,99,99,99,99,99,99,99],notes:'Regime-imposed.'},
+  // ECONOMIC
+  {cat:'ECONOMIC',name:'Oil +$20–40/barrel',s:[78,85,85,85,97,97,97,97,99,99,99,99,99,99,99,99,99,99,99,99,99],notes:'Brent +27% for week.'},
+  {cat:'ECONOMIC',name:'Oil +$40+/barrel',s:[45,62,75,75,72,72,72,80,86,88,90,92,99,99,99,99,99,99,99,99,99],notes:'Biggest weekly gain since COVID-2020.'},
+  {cat:'ECONOMIC',name:'Oil reaches $100/barrel',s:[null,null,null,null,null,null,null,null,null,null,42,52,100,100,100,100,100,100,100,100,100],notes:'Already $91. Energy war now explicit.'},
+  {cat:'ECONOMIC',name:'Market correction >15%',s:[35,48,60,55,55,55,55,72,83,86,87,88,92,93,94,95,95,96,97,97,97,98],notes:'Dow -1,052.'},
+  {cat:'ECONOMIC',name:'Sovereign debt crisis',s:[18,25,25,25,25,28,28,32,36,40,42,42,48,52,54,56,58,60,62,63,64,66],notes:'Gulf state stress.'},
+  {cat:'ECONOMIC',name:'Interceptor depletion crisis',s:[null,null,null,null,null,null,42,55,68,72,48,52,55,57,60,62,65,67,69,71,72,74],notes:'CBS confirmed.'},
+  // POLITICAL
+  {cat:'POLITICAL',name:'War Powers crisis',s:[52,68,68,82,82,85,88,90,97,98,97,97,97,97,97,97,97,97,98,98,98,98],notes:'Both chambers defeated resolutions.'},
+  {cat:'POLITICAL',name:'Iranian refugee flow >500k',s:[32,58,65,65,65,65,65,72,76,80,81,82,84,86,88,89,90,92,93,94,95,96],notes:'95,000 displaced Lebanon alone.'},
+  {cat:'POLITICAL',name:'Intelligence failure confirmed',s:[45,45,45,45,45,65,65,62,99,99,99,99,99,99,99,99,99,99,99,99,99],notes:'Katz confirmed false justification.'},
+  {cat:'POLITICAL',name:'Historical turning point',s:[68,82,82,88,88,92,92,97,99,99,99,99,99,99,99,99,99,99,99,99,99,99],notes:'Russia confirmed. 1,332 dead.'},
+  {cat:'POLITICAL',name:'WW3 — Definition B (3+ powers)',s:[null,null,null,null,null,null,22,28,42,52,55,57,62,63,65,66,68,70,72,74,76,78],notes:'Russia confirmed. UK expanding.'},
+  {cat:'POLITICAL',name:'WW3 — Definition C (historians)',s:[null,null,null,null,null,null,null,42,47,55,57,60,65,67,68,70,72,74,76,78,80,82],notes:'Russia supplying drones. IDF strained.'},
+  {cat:'POLITICAL',name:'Afghan-style quagmire',s:[null,null,null,null,null,null,null,32,38,44,47,52,57,62,65,68,70,73,77,80,82,84],notes:'NIC report validates quagmire.'},
+  {cat:'POLITICAL',name:'War crimes investigation',s:[null,null,null,null,null,null,null,45,58,60,63,70,78,82,84,86,88,91,93,94,94,95],notes:'HRW formal designation. US attribution.'},
+  {cat:'POLITICAL',name:'New supreme leader (imminent)',s:[null,null,null,null,null,null,null,null,null,null,55,75,100,100,100,100,100,100,100,100,100],notes:'Assembly reached opinion. Constitutionality contested.'},
+  {cat:'POLITICAL',name:'Israel assassinates successor',s:[null,null,null,null,null,null,null,null,null,null,null,45,60,58,62,64,65,65,65,65,65],notes:'Israel explicitly vowed to target successor.'},
+  {cat:'POLITICAL',name:'Iran war aims unachievable',s:[null,null,null,null,null,null,null,null,null,null,null,78,85,88,88,89,90,91,93,95,96,97],notes:'NIC report: unlikely to topple government.'},
+  {cat:'POLITICAL',name:'Trump on false polling data',s:[null,null,null,null,null,null,null,null,null,null,null,82,82,82,82,82,82,82,78,75,72,70],notes:'90% claim not supported by any credible polling.'},
+  {cat:'POLITICAL',name:'Public turns against war (30d)',s:[null,null,null,null,null,null,null,null,null,null,null,72,78,80,81,82,84,86,87,88,90,92],notes:'32–44% current support. Falling.'},
+  {cat:'POLITICAL',name:'US named in school war crime',s:[null,null,null,null,null,null,null,null,null,null,null,35,50,52,54,56,58,60,62,64,66,68],notes:'NYT: Minab strike may have been US.'},
+];
+
+// ========== COLOR SCALE ==========
+function probColor(v) {
+  if (v === null || v === undefined) return '#0f0f11';
+  if (v >= 95) return '#7a0000';
+  if (v >= 85) return '#a01010';
+  if (v >= 75) return '#b52020';
+  if (v >= 65) return '#963a10';
+  if (v >= 55) return '#7a5010';
+  if (v >= 45) return '#5a5a18';
+  if (v >= 35) return '#3a5a24';
+  if (v >= 20) return '#1e4a30';
+  return '#0f2a1e';
+}
+
+function probTextColor(v) {
+  if (v === null || v === undefined) return '#333';
+  if (v >= 55) return '#ffdddd';
+  if (v >= 35) return '#ddffdd';
+  return '#aaddaa';
+}
+
+// ========== BUILD HEATMAP ==========
+function buildHeatmap(filterCat) {
+  const table = document.getElementById('heatmap');
+  table.innerHTML = '';
+
+  // Header
+  const thead = document.createElement('thead');
+  const hr = document.createElement('tr');
+
+  const thv = document.createElement('th');
+  thv.className = 'th-var';
+  thv.textContent = 'Variable';
+  hr.appendChild(thv);
+
+  SHORT_CPS.forEach((cp, i) => {
+    const th = document.createElement('th');
+    th.textContent = cp;
+    if (i === 11) th.style.borderLeft = '2px solid rgba(184,36,28,0.5)';
+    hr.appendChild(th);
+  });
+
+  thead.appendChild(hr);
+  table.appendChild(thead);
+
+  const tbody = document.createElement('tbody');
+  let currentCat = '';
+
+  MATRIX_DATA.forEach(row => {
+    if (filterCat !== 'all' && !row.cat.includes(filterCat)) return;
+
+    if (row.cat !== currentCat) {
+      currentCat = row.cat;
+      if (currentCat) {
+        const cr = document.createElement('tr');
+        const td = document.createElement('td');
+        td.className = 'td-cat';
+        td.colSpan = 13;
+        td.textContent = currentCat;
+        cr.appendChild(td);
+        tbody.appendChild(cr);
+      }
+    }
+
+    const tr = document.createElement('tr');
+
+    const tdv = document.createElement('td');
+    tdv.className = 'td-var';
+    tdv.textContent = row.name;
+    tdv.title = row.notes || '';
+    tr.appendChild(tdv);
+
+    row.s.forEach((val, i) => {
+      const td = document.createElement('td');
+      if (i === 11) td.className = 'col-d9';
+
+      if (val !== null && val !== undefined) {
+        td.style.background = probColor(val);
+        td.style.color = probTextColor(val);
+        td.textContent = val + '%';
+      } else {
+        td.innerHTML = '<span class="cell-null">—</span>';
+      }
+      tr.appendChild(td);
+    });
+
+    tbody.appendChild(tr);
+  });
+
+  table.appendChild(tbody);
+}
+
+// Matrix filter buttons
+document.querySelectorAll('.cat-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    buildHeatmap(btn.dataset.cat);
+  });
+});
+
+buildHeatmap('all');
+
+// ========== TREND CHARTS ==========
+const checkpointNums = [1,1.5,2,2.5,3,3.5,4,5,6,7,8,9];
+
+function buildLineChart(svgId, datasets) {
+  const svg = document.getElementById(svgId);
+  const width = svg.parentElement.offsetWidth - 32;
+  const height = 200;
+  svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+
+  const margin = {top: 12, right: 12, bottom: 24, left: 36};
+  const W = width - margin.left - margin.right;
+  const H = height - margin.top - margin.bottom;
+
+  const d3svg = d3.select(svg);
+  d3svg.selectAll('*').remove();
+
+  const g = d3svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
+
+  // Scales
+  const xScale = d3.scaleLinear().domain([1,9]).range([0,W]);
+  const yScale = d3.scaleLinear().domain([0,100]).range([H,0]);
+
+  // Grid
+  g.selectAll('.grid-y').data(d3.range(0,101,25))
+    .enter().append('line')
+    .attr('x1',0).attr('x2',W)
+    .attr('y1',d=>yScale(d)).attr('y2',d=>yScale(d))
+    .attr('stroke','rgba(42,42,48,0.6)').attr('stroke-width',1);
+
+  // X axis
+  g.append('g').attr('transform',`translate(0,${H})`)
+    .call(d3.axisBottom(xScale).ticks(9).tickSize(3))
+    .call(g => {
+      g.select('.domain').attr('stroke','#333');
+      g.selectAll('.tick line').attr('stroke','#333');
+      g.selectAll('.tick text').attr('fill','#555').style('font-family','IBM Plex Mono').style('font-size','9px');
+    });
+
+  // Y axis
+  g.append('g').call(d3.axisLeft(yScale).ticks(4).tickSize(3).tickFormat(d=>d+'%'))
+    .call(g => {
+      g.select('.domain').attr('stroke','#333');
+      g.selectAll('.tick line').attr('stroke','#333');
+      g.selectAll('.tick text').attr('fill','#555').style('font-family','IBM Plex Mono').style('font-size','9px');
+    });
+
+  const colors = ['#e03028','#f09a20','#2a6ab0','#22a050'];
+
+  datasets.forEach((ds, di) => {
+    const points = [];
+    ds.values.forEach((v, i) => {
+      if (v !== null && i < 9) {  // D1-D9 only
+        points.push({ x: i < 2 ? 1 : i < 4 ? 2 : i < 6 ? 3 : i-2, y: v });
+      }
+    });
+
+    // Use key day points: D1i=1, D2=2, D3=3, D4=4, D5=5, D6=6, D7=7, D8=8, D9=9
+    const keyPts = [
+      {x:1, y:ds.values[0]},
+      {x:2, y:ds.values[2]},
+      {x:3, y:ds.values[4]},
+      {x:4, y:ds.values[6]},
+      {x:5, y:ds.values[7]},
+      {x:6, y:ds.values[8]},
+      {x:7, y:ds.values[9]},
+      {x:8, y:ds.values[10]},
+      {x:9, y:ds.values[11]},
+    ].filter(p => p.y !== null && p.y !== undefined);
+
+    if (keyPts.length < 2) return;
+
+    const line = d3.line()
+      .x(p => xScale(p.x))
+      .y(p => yScale(p.y))
+      .curve(d3.curveCatmullRom);
+
+    g.append('path')
+      .datum(keyPts)
+      .attr('fill','none')
+      .attr('stroke', colors[di])
+      .attr('stroke-width', 1.5)
+      .attr('d', line);
+
+    // Dots at Day 9
+    const last = keyPts[keyPts.length-1];
+    g.append('circle')
+      .attr('cx', xScale(last.x))
+      .attr('cy', yScale(last.y))
+      .attr('r', 3)
+      .attr('fill', colors[di]);
+
+    // Label
+    g.append('text')
+      .attr('x', W - 2)
+      .attr('y', yScale(last.y) - 4)
+      .attr('fill', colors[di])
+      .style('font-family','IBM Plex Mono')
+      .style('font-size','8px')
+      .style('text-anchor','end')
+      .text(ds.label + ' ' + last.y + '%');
+  });
+}
+
+// Render after load
+setTimeout(() => {
+  buildLineChart('chart-duration', [
+    {label:'>7 days', values:MATRIX_DATA.find(d=>d.name==='Conflict >7 days').s},
+    {label:'>30 days', values:MATRIX_DATA.find(d=>d.name==='Conflict >30 days').s},
+    {label:'>60 days', values:MATRIX_DATA.find(d=>d.name==='Conflict >60 days').s},
+  ]);
+  buildLineChart('chart-ww3', [
+    {label:'Def. B', values:MATRIX_DATA.find(d=>d.name==='WW3 — Definition B (3+ powers)').s},
+    {label:'Def. C', values:MATRIX_DATA.find(d=>d.name==='WW3 — Definition C (historians)').s},
+  ]);
+  buildLineChart('chart-greatpower', [
+    {label:'Russia support', values:MATRIX_DATA.find(d=>d.name==='Russia active support').s},
+    {label:'Non-ME powers', values:MATRIX_DATA.find(d=>d.name==='Non-ME power involvement').s},
+    {label:'Europe defensive', values:[null,null,null,null,null,null,null,62,75,75,80,82]},
+  ]);
+  buildLineChart('chart-economic', [
+    {label:'Oil +$40+', values:MATRIX_DATA.find(d=>d.name==='Oil +$40+/barrel').s},
+    {label:'Market -15%', values:MATRIX_DATA.find(d=>d.name==='Market correction >15%').s},
+    {label:'$100/bbl', values:MATRIX_DATA.find(d=>d.name==='Oil reaches $100/barrel').s},
+  ]);
+}, 100);
+
+// ========== TIMELINE ==========
+const TIMELINE = [
+  {
+    day:1, date:'Feb 28',
+    headline:'Khamenei Killed — Command Structure Fractures',
+    probs:['Iranian cmd: 72%→93% ↑','Conflict >30d: 55%→68% ↑','Strait disrupted: 75%→85% ↑'],
+    events:[
+      {cat:'CRITICAL',text:'Supreme Leader Ali Khamenei confirmed killed in opening US-Israel strikes.'},
+      {cat:'CRITICAL',text:'IRGC command structure immediately fragmented — Vahidi begins consolidation.'},
+      {cat:'HIGH',text:'Strait of Hormuz disrupted. Iran launches first wave of ballistic missiles.'},
+      {cat:'HIGH',text:'3 US KIA in Kuwait missile strike. Hezbollah immediately activates from Lebanon.'},
+      {cat:'HIGH',text:'RAF Akrotiri (Cyprus) struck by Iranian missiles — first European base hit.'},
+    ]
+  },
+  {
+    day:2, date:'Mar 1',
+    headline:'Lebanon Front Opens — Friendly Fire Incident',
+    probs:['Mass-casualty risk: 48% ↑','Ground forces: 22%→30% ↑'],
+    events:[
+      {cat:'CRITICAL',text:'Lebanon front formally opens. Dahiyeh evacuation ordered. Large ground war forming.'},
+      {cat:'CRITICAL',text:'3 F-15Es downed by Kuwait friendly fire — destabilizes inter-op trust.'},
+      {cat:'HIGH',text:'4th US KIA confirmed. Hezbollah anti-tank missiles active across southern Lebanon.'},
+      {cat:'HIGH',text:'Minab school strike: 148 girls killed. First mass civilian casualty event.'},
+    ]
+  },
+  {
+    day:3, date:'Mar 2',
+    headline:'Assembly of Experts Bombed — Larijani Rules Out Negotiations',
+    probs:['Conflict >60d: 48%→50% ↑','War crimes: First raised'],
+    events:[
+      {cat:'CRITICAL',text:'Assembly of Experts meeting space bombed — succession planning crippled.'},
+      {cat:'CRITICAL',text:'Larijani: Iran will not negotiate. Both sides publicly close diplomatic door.'},
+      {cat:'HIGH',text:'Strait of Hormuz formally declared closed. Maersk suspends regional shipping.'},
+      {cat:'HIGH',text:'Interceptor depletion first raised — Gulf math becoming unsustainable.'},
+    ]
+  },
+  {
+    day:4, date:'Mar 3',
+    headline:'IRIS Dena Sunk — NATO First Kinetic Contact',
+    probs:['Quagmire risk: 42%→48% ↑','European involvement: 38%→45% ↑'],
+    events:[
+      {cat:'CRITICAL',text:'IRIS Dena frigate sunk — Iran loses major surface combatant.'},
+      {cat:'CRITICAL',text:'First kinetic engagement between Iranian forces and NATO assets confirmed.'},
+      {cat:'HIGH',text:'Death toll 1,045. Iranian CIA back-channel signal received — quickly dismissed.'},
+      {cat:'HIGH',text:'UK and Spain deny US basing access — first allied defection.'},
+    ]
+  },
+  {
+    day:5, date:'Mar 4',
+    headline:'Kurdish CIA Operation Confirmed — Domestic Surveillance Exposed',
+    probs:['Ground forces: 58% ↑','Non-ME powers: 55% ↑','WW3 Def B: 28% NEW'],
+    events:[
+      {cat:'CRITICAL',text:'Kurdish CIA ground operation confirmed: thousands crossing border into Iran. CIA-armed. Israel air support.'},
+      {cat:'CRITICAL',text:'Three incompatible strategic rationales identified — CIA ground op has no coherent endgame.'},
+      {cat:'CRITICAL',text:'Gen. Caine confirms pre-strike cyber ops: Natanz air defense hacked, Tehran traffic cams compromised.'},
+      {cat:'HIGH',text:'France authorizes US use of French military bases — largest single European escalation.'},
+      {cat:'HIGH',text:'Qatar struck by Iran. IRGC ground forces entered. Gulf aviation functionally collapsed.'},
+      {cat:'HIGH',text:'Senate War Powers vote defeated 47-53. House follows same day. Congress abdicated.'},
+    ]
+  },
+  {
+    day:6, date:'Mar 5',
+    headline:'Israel \'Next Phase\' — Bahrain Refinery Hit — War Costs $1B/Day',
+    probs:['Europe defensive: 62%→75% ↑','WW3 Def B: 42% ↑','Conflict >60d: 80% ↑'],
+    events:[
+      {cat:'CRITICAL',text:'Israel announces "next phase" after 2,500+ strikes, 6,000+ weapons, 600+ targets.'},
+      {cat:'CRITICAL',text:'Bahrain oil refinery struck — first direct hit on Gulf state energy infrastructure.'},
+      {cat:'CRITICAL',text:'Trump demands role in selecting Iran\'s next supreme leader. Katz confirms assassination planned Nov 2025.'},
+      {cat:'HIGH',text:'UAE absorbs 131 drones + 7 ballistic missiles in a single day.'},
+      {cat:'HIGH',text:'Gulf interceptor depletion confirmed by CBS News. B-1 bomber arrives UK airbase.'},
+      {cat:'HIGH',text:'Italy defence minister: US-Israel attack "violated international law." NATO ally condemning.'},
+    ]
+  },
+  {
+    day:7, date:'Mar 6',
+    headline:'RUSSIA CONFIRMED: Providing Targeting Intelligence on US Warships',
+    probs:['Russia support: 65%→92% ↑','WW3 Def B: 42%→52% ↑','WW3 Def C: 47%→55% ↑'],
+    events:[
+      {cat:'CRITICAL',text:'RUSSIA CONFIRMED providing Iran targeting intelligence on US warships and aircraft — Washington Post, three US officials. Described as "comprehensive and systematic" since Day 1.'},
+      {cat:'CRITICAL',text:'Tehran heaviest bombardment of war. 174 cities struck across Iran. UNICEF: 181 children killed confirmed.'},
+      {cat:'CRITICAL',text:'Trump: "UNCONDITIONAL SURRENDER." Iran FM Araghchi: "no reason why we should negotiate." Both sides close door.'},
+      {cat:'HIGH',text:'B-2 stealth bombers deploying 2,000-lb penetrator bombs. Israel claims 80% of Iran air defenses destroyed.'},
+      {cat:'HIGH',text:'Iran missile attacks down 90%, drone attacks down 83% from Day 1 peaks.'},
+      {cat:'HIGH',text:'Oil: Brent +24%, US crude +31% for week. Dow -1,052 points. War costs $1B/day.'},
+    ]
+  },
+  {
+    day:8, date:'Mar 7',
+    headline:'Pezeshkian Apology + Strikes Continue — Gulf Investment Pledges Under Review',
+    probs:['Gulf interceptor collapse: 48% ↑','Kuwait production cut: 55% NEW','BTC pipeline: 22% NEW','Oil $100/bbl: 42% NEW'],
+    events:[
+      {cat:'CRITICAL',text:'Israel deploys 80+ jets in "broad-scale wave." CENTCOM: 3,000+ targets struck, 43 warships destroyed total.'},
+      {cat:'CRITICAL',text:'Pezeshkian delivers televised apology to Gulf neighbors — then Iranian strikes continue same evening. Direct evidence of command fragmentation at presidential level.'},
+      {cat:'CRITICAL',text:'Saudi Arabia: 16 drones intercepted heading toward Shaybah oil field (1M bpd). Dubai airport struck multiple times.'},
+      {cat:'HIGH',text:'Kuwait begins cutting oil production — storage full. First production cut of war.'},
+      {cat:'HIGH',text:'UK pledges jets, helicopters, destroyer to defend Saudi Arabia (Starmer-MBS call). HMS Prince of Wales on readiness.'},
+      {cat:'HIGH',text:'Gulf states reviewing $3 trillion US investment pledges. Oil: Brent $91/barrel — highest since Oct 2023.'},
+      {cat:'HIGH',text:'IRGC C-4 plot confirmed in Azerbaijan. BTC pipeline (⅓ of Israeli oil imports) under threat.'},
+    ]
+  },
+  {
+    day:9, date:'Mar 8',
+    headline:'Oil Infrastructure Struck — NIC: War Aims Unachievable — WW3 Def. C Crosses 60%',
+    probs:['WW3 Def C: 60% ↑ — FIRST TIME','Iran cmd: 92% ↑','Oil $100/bbl: 52% ↑','Succession: 75% ↑','HEU seizure: 25% NEW'],
+    events:[
+      {cat:'CRITICAL',text:'ENERGY WAR BEGINS: Shehran oil depot ablaze. Four additional storage facilities + oil transfer centre struck. Blackened rain over Tehran. Energy warfare now explicit Israeli strategy.'},
+      {cat:'CRITICAL',text:'NIC INTELLIGENCE REPORT LEAKED (Washington Post): US National Intelligence Council found large-scale assault "unlikely to topple" government. Opposition takeover "unlikely." Own intelligence says war aims are unachievable.'},
+      {cat:'CRITICAL',text:'Bahrain desalination plant struck. Gulf nations depend almost entirely on desalinated water. Tit-for-tat water war pattern established.'},
+      {cat:'CRITICAL',text:'Iran succession: Assembly of Experts claims "decisive unanimous opinion" reached — name withheld. Constitutional validity contested. Israel vowed to immediately target whoever is chosen.'},
+      {cat:'CRITICAL',text:'Trump: US ground troops "possibly" going to Iran. Axios: US-Israel discussed special forces to seize Iran\'s HEU stockpile.'},
+      {cat:'HIGH',text:'Kuwait: 2 border security killed — first Gulf state military deaths. Airport fuel storage struck.'},
+      {cat:'HIGH',text:'HRW formally designates Minab school strike a war crime. Al Jazeera: targeting "likely deliberate." NYT: strike may have been US, not Israel.'},
+      {cat:'HIGH',text:'Lebanon: 394 killed (83 children). First 2 IDF soldiers killed in Lebanon. Downtown Beirut hotel struck.'},
+      {cat:'HIGH',text:'Wang Yi (China): "flames of war" risk spreading. Calls immediate halt. Xi preparing to host Trump in Beijing — potential off-ramp.'},
+      {cat:'HIGH',text:'Oslo US Embassy: overnight explosion, possible terrorism, no injuries. First potential war spillover to European soil.'},
+      {cat:'HIGH',text:'Pezeshkian apology backtracked: claimed "misinterpreted by the enemy." Larijani televised unity address — denial confirms rifts are real.'},
+      {cat:'MEDIUM',text:'Oil: Brent +27% for week — biggest weekly gain since COVID-2020. Iran claims 3 MQ-9 Reapers downed (unconfirmed by US).'},
+    ]
+  },
+
+  {
+    day: 27, date: 'Mar 27', label: 'DAY 27',
+    headline: 'Witkoff 15-Point Proposal; Iran Denies Talks; Russia Confirmed Supplying Drones',
+    probs:['30-day ceasefire: 32% ↑ — dual-track signal','Russia co-belligerent: 80% ↑','Ground invasion: 38% ↑','WW3 Def C: 75% ↑','War crimes confirmed: 88% ↑'],
+    events:[
+      {cat:'CRITICAL',text:'TRUMP EXTENDS ENERGY STRIKE PAUSE TO APRIL 6: "Talks are ongoing" and "going very well." Pause window now 10 additional days. Iran Foreign Ministry immediately denies any dialogue with Washington — calls Trump\'s comments an attempt to reduce oil prices and buy time for military planning.'},
+      {cat:'CRITICAL',text:'WITKOFF 15-POINT PEACE PROPOSAL: Special envoy presents framework at Cabinet meeting. Terms undisclosed. Iran\'s denial of talks means proposal has no confirmed recipient. Trump: "not desperate" to make deal. Also floated taking Iran\'s oil as "an option" — then said "I wouldn\'t talk about it."'},
+      {cat:'CRITICAL',text:'RUSSIA CONFIRMED SUPPLYING DRONES: EU High Rep Kaja Kallas at G7 Paris: Russia providing intelligence AND drones to Iran to attack Gulf neighbors and US bases. First confirmed weapons transfer — escalation beyond intel support. "These wars are very much interlinked," Kallas said, urging US to pressure Moscow.'},
+      {cat:'CRITICAL',text:'US WEIGHING 10,000 ADDITIONAL GROUND TROOPS: Deployment under consideration as Trump warns Iran\'s leaders to agree "before it is too late." Iranian ground forces commander vows "unwavering resistance" — every inch of border monitored and defended.'},
+      {cat:'HIGH',text:'IRGC NAVAL COMMANDER KILLED: Israeli targeted strike kills officer responsible for Hormuz blockade command. Hormuz command structure degraded but strait remains closed. 2,000+ vessels and 20,000 seafarers still stranded.'},
+      {cat:'HIGH',text:'IDF CHIEF WARNS OF SEVERE STRAIN: Lt. Gen. Eyal Zamir tells government ministers IDF faces critical manpower shortages and expanded operational demands across Iran, Lebanon, and Gaza simultaneously. First formal acknowledgment of Israeli military limits.'},
+      {cat:'HIGH',text:'CASUALTY UPDATE — Day 27: Iran 1,937 dead (217 children), 20,000+ injured. 289 medical facilities damaged. 600 schools damaged. 120 museums and cultural sites damaged. Israel 19 dead. US 13 KIA. Gulf states 25 dead.'},
+      {cat:'HIGH',text:'DIMONA AREA STRUCK: Iranian missiles hit near Dimona — Israel\'s main nuclear facility — and nearby Arad. 180 wounded. Iranian state TV frames as response to Natanz strikes. First direct targeting of Israel\'s nuclear geography.'},
+      {cat:'HIGH',text:'OVERNIGHT IAF WAVE ON TEHRAN: Dozens of military targets struck including IRGC weapons manufacturing, ballistic missile production sites, battery production facilities, anti-aircraft storage. Israel\'s Katz: IDF strikes will "intensify and expand to additional targets and domains."'},
+      {cat:'MEDIUM',text:'SCHOOL STRIKE PRESSURE MOUNTS: UN OHCHR calls for immediate publication of US investigation findings into Minab school strike (168 children killed). Hegseth promises "thorough" investigation. No findings released.'},
+      {cat:'MEDIUM',text:'OIL AND MARKETS: Brent crude $109.1/bbl (+1%). WTI $94.9/bbl. Markets fell on deal uncertainty after Iran denied talks. OECD maintained 2026 global growth at 2.9% — cut European outlook. UAE reportedly joining coalition force to reopen Strait of Hormuz.'},
+    ]
+  },
+];
+
+function buildTimeline() {
+  const container = document.getElementById('timeline-container');
+  TIMELINE.forEach(day => {
+    const div = document.createElement('div');
+    div.className = 'day-entry';
+
+    const label = document.createElement('div');
+    label.className = 'day-label';
+    label.innerHTML = `<div class="day-num">D${day.day}</div><span class="day-date">${day.date}</span>`;
+
+    const content = document.createElement('div');
+    content.className = 'day-content';
+
+    const hl = document.createElement('div');
+    hl.className = 'day-headline';
+    hl.textContent = day.headline;
+
+    const probRow = document.createElement('div');
+    probRow.className = 'day-prob-row';
+    day.probs.forEach(p => {
+      const chip = document.createElement('span');
+      chip.className = 'prob-chip ' + (p.includes('NEW') ? 'new' : p.includes('↑') ? 'up' : 'down');
+      chip.textContent = p;
+      probRow.appendChild(chip);
+    });
+
+    const toggle = document.createElement('button');
+    toggle.className = 'day-toggle';
+    toggle.textContent = `[ + ${day.events.length} events ]`;
+
+    const evList = document.createElement('ul');
+    evList.className = 'day-events';
+
+    day.events.forEach(ev => {
+      const li = document.createElement('li');
+      const catSpan = document.createElement('span');
+      catSpan.className = 'ev-cat ' + ev.cat.toLowerCase();
+      catSpan.textContent = ev.cat;
+      const text = document.createElement('span');
+      text.textContent = ev.text;
+      li.appendChild(catSpan);
+      li.appendChild(text);
+      evList.appendChild(li);
+    });
+
+    toggle.addEventListener('click', () => {
+      evList.classList.toggle('open');
+      toggle.textContent = evList.classList.contains('open')
+        ? `[ − ${day.events.length} events ]`
+        : `[ + ${day.events.length} events ]`;
+    });
+
+    // Auto-open Day 27
+    if (day.day === 27) {
+      evList.classList.add('open');
+      toggle.textContent = `[ − ${day.events.length} events ]`;
+    }
+
+    content.appendChild(hl);
+    content.appendChild(probRow);
+    content.appendChild(toggle);
+    content.appendChild(evList);
+
+    div.appendChild(label);
+    div.appendChild(content);
+    container.appendChild(div);
+  });
+}
+
+buildTimeline();
+
+// ========== ACTORS ==========
+const ACTORS = [
+  {
+    name: 'Gen. Dan Caine',
+    title: '22nd Chairman, Joint Chiefs of Staff',
+    risk: 'danger',
+    body: 'F-16 pilot. CIA Associate Director 2021–24. Nominated after Trump fired Gen. C.Q. Brown — first Chairman never to serve as 4-star before appointment, first nominated while in retirement. Authority flows entirely from Trump\'s favor. CONFIRMED DAY 22: Caine privately opposed the ceasefire framework proposed by NSC staff, telling Trump the deal would leave Iran\'s IRGC command structure intact. His opposition was the decisive factor in Trump rejecting the agreement.',
+    flags: [
+      'NOT ideologically MAGA — structurally dependent on Trump\'s favor, producing same decision-making distortions',
+      '\"Definitely pulling punches\" — documented gap between private discussions with generals and what he tells Trump',
+      'Admiral Cooper (CENTCOM commander actually running the war) has not spoken to Trump since crisis began. Caine is sole military voice reaching president.',
+      'Publicly stating US will \"strike progressively deeper\" while NIC says war aims unachievable',
+      'CONFIRMED: Opposed Day 22 ceasefire framework — cited incomplete IRGC degradation. Likely extended conflict by weeks minimum.',
+      'Historical analogue: Colin Powell, Iraq 2003 — private reservations, public support, insufficient pushback at the moment it mattered. Unlike Powell, Caine is actively blocking the exit.',
+    ]
+  },,
+  {
+    name: 'Donald Trump',
+    title: 'President of the United States',
+    risk: 'danger',
+    body: 'Operating under Malignant Narcissism framework (Fromm 1964, Kernberg 1984). Stated objective: "unconditional surrender." Publicly threatened "areas and groups of people" with "complete destruction and certain death." Believes internal polls showing 90% support — no credible polling supports this figure.',
+    flags: [
+      '"Unconditional surrender" demand removes all diplomatic exit pathways',
+      'False polling data (90% claim) removes self-correcting psychological incentive to seek exit',
+      'Has publicly discussed selecting Iran\'s next supreme leader',
+      'First president in modern history to launch major military operation with public already opposed (32–44% support)',
+      'MN framework predicts: escalation in response to setbacks rather than strategic recalibration',
+    ]
+  },
+  {
+    name: 'Masoud Pezeshkian',
+    title: 'President of Iran',
+    risk: 'warning',
+    body: 'Reformist president with severely constrained authority under IRGC structure. Day 8 televised apology to Gulf neighbors — then IRGC continued strikes same evening. Day 9 backtrack: claims remarks "misinterpreted by the enemy." Presidential-level command fragmentation now confirmed.',
+    flags: [
+      'Apology → backtrack cycle confirms hardliner veto power over presidential decisions',
+      'Has rejected "unconditional surrender" publicly — no diplomatic mandate',
+      'NIC report: regime unlikely to fall despite massive military pressure',
+      'Succession crisis removes even nominal civilian oversight of IRGC',
+    ]
+  },
+  {
+    name: 'Benjamin Netanyahu',
+    title: 'Prime Minister of Israel',
+    risk: 'danger',
+    body: 'Confirmed assassination of Khamenei was planned since November 2025 — "imminent threat" justification was false by design. Now pursuing "almost complete control of Iranian skies" with "many more targets and surprises prepared." Vowed to immediately target whoever Iran names as successor.',
+    flags: [
+      'Pre-planned war confirmed: Katz stated assassination prepared as early as Nov 2025',
+      'Energy warfare now explicit strategy — oil infrastructure struck Day 9',
+      'Israeli elections create political incentive to extend and escalate conflict',
+      '"Imminent threat" framing was constructed post-facto — intelligence failure confirmed 99%',
+    ]
+  },
+  {
+    name: 'Vladimir Putin',
+    title: 'President, Russian Federation',
+    risk: 'danger',
+    body: 'Russia confirmed providing "comprehensive and systematic" targeting intelligence on US warships and aircraft since Day 1 — Washington Post, three US officials. Russia simultaneously benefiting from energy windfall: Kremlin confirmed "significant increase in demand" for Russian products. Dual interest: intelligence support + economic gain from war.',
+    flags: [
+      'Russia confirmed co-belligerent probability: 75%',
+      'Energy windfall creates economic incentive to prolong conflict',
+      'If a US warship is sunk using Russian intelligence: US must choose between retaliating against Russia or absorbing the loss',
+      'US-Russia direct confrontation risk: 25% and rising',
+    ]
+  },
+  {
+    name: 'Wang Yi / Xi Jinping',
+    title: 'China FM / President',
+    risk: 'neutral',
+    body: 'China confirmed NOT assisting Iran militarily (same WaPo officials who confirmed Russian involvement). Day 9 shift: Wang Yi explicitly called for "immediate halt to military operations." Xi preparing to host Trump in Beijing — first potentially viable diplomatic off-ramp of the war.',
+    flags: [
+      'China active ceasefire mediation probability: 38% (NEW Day 9)',
+      'Beijing summit preparation suggests diplomatic leverage is being assembled',
+      'Whether Trump will respond to ceasefire overture: unknown',
+      'China\'s interest: war is disrupting global trade, including Chinese supply chains',
+    ]
+  },
+];
+
+function buildActors() {
+  const grid = document.getElementById('actor-grid');
+  ACTORS.forEach(actor => {
+    const card = document.createElement('div');
+    card.className = `actor-card ${actor.risk}`;
+
+    card.innerHTML = `
+      <div class="actor-name">${actor.name}</div>
+      <div class="actor-title">${actor.title}</div>
+      <div class="actor-body">${actor.body}</div>
+      <div class="actor-flags">
+        ${actor.flags.map(f => `<div class="flag-item">${f}</div>`).join('')}
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+buildActors();
+
+// ========== POLLING ==========
+const POLLS = [
+  {source:'NPR/PBS/Marist (Mar 2–4)', support:44, oppose:56, note:'Gold standard. Independents: 59% oppose.'},
+  {source:'CNN/SSRS', support:41, oppose:59, note:''},
+  {source:'Economist/YouGov', support:32, oppose:45, note:'23% no opinion'},
+  {source:'Angus Reid', support:32, oppose:47, note:'MAGA base alone: 85% support'},
+  {source:'Fox News (leading questions)', support:50, oppose:50, note:'After priming on "national security threat." NYT flagged methodology.'},
+];
+
+const CONTEXT = [
+  {label:'Afghanistan post-9/11 (2001)', support:90},
+  {label:'Gulf War (1991)', support:79},
+  {label:'Iraq War (2003)', support:76},
+  {label:'Syria strikes (2017)', support:50},
+  {label:'Iran 2026 — Aggregate', support:38},
+];
+
+function buildPolling() {
+  const grid = document.getElementById('polling-grid');
+
+  // Card 1: Current polls
+  const card1 = document.createElement('div');
+  card1.className = 'polling-card';
+  card1.innerHTML = '<h3>Current Public Opinion (Day 9)</h3>';
+
+  const bars = document.createElement('div');
+  bars.className = 'poll-bar-container';
+
+  POLLS.forEach(p => {
+    const row = document.createElement('div');
+    row.className = 'poll-row';
+    row.innerHTML = `
+      <span class="poll-label">${p.source}</span>
+      <div class="poll-bar-wrap">
+        <div class="poll-bar-fill support" style="width:${p.support}%; position:absolute; height:100%;"></div>
+        <div class="poll-bar-fill oppose" style="width:${p.oppose}%; left:${p.support}%; position:absolute; height:100%;"></div>
+      </div>
+      <span class="poll-pct" style="color:var(--red-bright)">${p.support}%</span>
+    `;
+    row.children[1].style.position = 'relative';
+    bars.appendChild(row);
+  });
+
+  card1.appendChild(bars);
+
+  const legend = document.createElement('div');
+  legend.style.cssText = 'display:flex;gap:1.5rem;margin-top:1rem;font-family:var(--mono);font-size:9px;';
+  legend.innerHTML = `
+    <span style="color:var(--red-bright)">■ Support</span>
+    <span style="color:var(--green-bright)">■ Oppose</span>
+    <span style="color:var(--text-dim)">Aggregate: 38–44% support · 49–59% oppose</span>
+  `;
+  card1.appendChild(legend);
+
+  // Card 2: Historical comparison
+  const card2 = document.createElement('div');
+  card2.className = 'polling-card';
+  card2.innerHTML = '<h3>Historical Launch Support Comparison</h3>';
+
+  const historicalBars = document.createElement('div');
+  historicalBars.className = 'poll-bar-container';
+
+  CONTEXT.forEach(c => {
+    const row = document.createElement('div');
+    row.className = 'poll-row';
+    const isIran = c.label.includes('Iran 2026');
+    row.innerHTML = `
+      <span class="poll-label" style="${isIran ? 'color:var(--red-bright)' : ''}">${c.label}</span>
+      <div class="poll-bar-wrap" style="position:relative">
+        <div class="poll-bar-fill support" style="width:${c.support}%; position:absolute; height:100%; background:${isIran ? '#e03028' : '#555'};"></div>
+      </div>
+      <span class="poll-pct">${c.support}%</span>
+    `;
+    historicalBars.appendChild(row);
+  });
+
+  card2.appendChild(historicalBars);
+
+  const note = document.createElement('div');
+  note.style.cssText = 'margin-top:1rem;font-family:var(--mono);font-size:9px;color:var(--text-dim);';
+  note.textContent = 'No president in modern history launched a major military operation with public already opposed at launch. Iran 2026 is a historical outlier.';
+  card2.appendChild(note);
+
+  grid.appendChild(card1);
+  grid.appendChild(card2);
+}
+buildPolling();
+
+// ========== SCROLL FADE ==========
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) e.target.style.opacity = '1';
+  });
+}, {threshold: 0.05});
+
+document.querySelectorAll('section, .day-entry').forEach(el => {
+  el.style.opacity = '0';
+  el.style.transition = 'opacity 0.5s ease';
+  observer.observe(el);
+});
+
+// Immediately show first section
+document.querySelector('section').style.opacity = '1';
+</script>
+</body>
+</html>

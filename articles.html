@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Articles — The Network Exposed</title>
+<meta name="description" content="Investigative articles documenting authoritarian networks, Christian nationalist infrastructure, and anti-democratic actors in the United States.">
+<link rel="canonical" href="https://thenetworkexposed.org/articles.html">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=IBM+Plex+Mono:wght@300;400;500&family=Newsreader:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --black: #080808;
+  --off-black: #0f0f0f;
+  --dark: #161616;
+  --border: #2a2a2a;
+  --red: #c0392b;
+  --red-light: #e74c3c;
+  --white: #f0ede8;
+  --muted: #999;
+  --warm-gray: #c0bbb3;
+  --gold: #c9a84c;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--black);
+  color: var(--white);
+  font-family: 'Newsreader', Georgia, serif;
+  overflow-x: hidden;
+}
+
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 48px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(8,8,8,0.97);
+  backdrop-filter: blur(10px);
+}
+nav .logo {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--red-light);
+  font-weight: 500;
+  text-decoration: none;
+}
+nav ul { display: flex; list-style: none; gap: 36px; }
+nav ul a {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+nav ul a:hover { color: var(--white); }
+
+.page-wrapper {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 140px 48px 100px;
+}
+
+.page-header {
+  margin-bottom: 64px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 48px;
+}
+
+.page-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--red-light);
+  margin-bottom: 16px;
+}
+
+.page-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: clamp(36px, 5vw, 64px);
+  font-weight: 900;
+  line-height: 1.1;
+  color: var(--white);
+  margin-bottom: 16px;
+}
+
+.page-desc {
+  font-size: 1rem;
+  color: var(--warm-gray);
+  line-height: 1.6;
+  max-width: 560px;
+}
+
+/* ARTICLE LIST */
+.article-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.article-item {
+  display: block;
+  text-decoration: none;
+  padding: 32px 0;
+  border-bottom: 1px solid var(--border);
+  transition: border-color 0.2s;
+}
+
+.article-item:hover { border-color: var(--red); }
+
+.article-item-meta {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.article-item-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--white);
+  line-height: 1.3;
+  margin-bottom: 10px;
+  transition: color 0.2s;
+}
+
+.article-item:hover .article-item-title { color: var(--red-light); }
+
+.article-item-lede {
+  font-size: 0.95rem;
+  color: var(--warm-gray);
+  line-height: 1.6;
+}
+
+.empty-state {
+  padding: 64px 0;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  color: var(--muted);
+  letter-spacing: 1px;
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="logo">The Network Exposed</a>
+  <ul>
+    <li><a href="/">Map</a></li>
+    <li><a href="/index.html#investigations">Investigations</a></li>
+    <li><a href="/articles.html">Articles</a></li>
+    <li><a href="/epic-fury.html">Epic Fury</a></li>
+  </ul>
+</nav>
+
+<div class="page-wrapper">
+  <div class="page-header">
+    <div class="page-label">Published Work</div>
+    <h1 class="page-title">Articles</h1>
+    <p class="page-desc">Investigative reporting on authoritarian networks, Christian nationalist infrastructure, and anti-democratic actors in the United States.</p>
+  </div>
+
+  <div class="article-list" id="article-list">
+    <!-- Articles injected here by agent -->
+  </div>
+</div>
+
+</body>
+</html>

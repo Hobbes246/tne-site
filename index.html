@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- ===== PRIMARY SEO ===== -->
+<title>The Network — Christian Nationalist, Authoritarian & Techno-Authoritarian Organizations in the Trump Administration</title>
+<meta name="description" content="An interactive investigative map documenting the overlapping networks of Christian nationalist organizations, authoritarian think tanks, techno-authoritarian Silicon Valley figures, dark money infrastructure, and anti-democratic political actors shaping the second Trump administration.">
+<meta name="keywords" content="Christian nationalism, Project 2025, Heritage Foundation, Leonard Leo, dark money, authoritarian, anti-democratic, Curtis Yarvin, Peter Thiel, JD Vance, New Apostolic Reformation, Claremont Institute, techno-authoritarianism, Dark Enlightenment, neo-reactionary, Trump administration, network map, investigative journalism, Russell Vought, Stephen Miller, Pete Hegseth, Federalist Society, Alliance Defending Freedom, Turning Point USA, January 6">
+<meta name="robots" content="index, follow">
+<meta name="author" content="The Network Investigation">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="canonical" href="https://thenetworkexposed.org/">
+
+<!-- ===== OPEN GRAPH (Facebook / LinkedIn sharing) ===== -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://thenetworkexposed.org/">
+<meta property="og:title" content="The Network — Mapping Christian Nationalist & Authoritarian Power in the Trump Administration">
+<meta property="og:description" content="Interactive investigation mapping 71 nodes across Christian nationalist organizations, techno-authoritarian Silicon Valley figures, dark money networks, anti-democratic think tanks, and political actors driving the second Trump administration. Click any node to read full documented profiles.">
+<meta property="og:site_name" content="The Network">
+
+<!-- ===== TWITTER CARD ===== -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="The Network — Mapping Authoritarian Power in the Trump Administration">
+<meta name="twitter:description" content="Interactive map: 71 nodes documenting Christian nationalists, techno-authoritarians, dark money networks, and anti-democratic actors. Click any node for full sourced profiles including January 6 connections.">
+
+<!-- ===== STRUCTURED DATA ===== -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "The Network — Christian Nationalist, Authoritarian & Techno-Authoritarian Organizations in the Trump Administration",
+  "description": "An interactive investigative map documenting the overlapping networks of Christian nationalist organizations, authoritarian think tanks, techno-authoritarian Silicon Valley figures, dark money infrastructure, and anti-democratic political actors shaping the second Trump administration.",
+  "url": "https://thenetworkexposed.org/",
+  "about": [
+    {"@type": "Thing", "name": "Christian nationalism"},
+    {"@type": "Thing", "name": "Project 2025"},
+    {"@type": "Thing", "name": "Dark money in politics"},
+    {"@type": "Thing", "name": "Techno-authoritarianism"},
+    {"@type": "Thing", "name": "January 6 United States Capitol attack"},
+    {"@type": "Thing", "name": "Trump administration"},
+    {"@type": "Thing", "name": "New Apostolic Reformation"}
+  ],
+  "keywords": "Christian nationalism, Project 2025, Heritage Foundation, Leonard Leo, dark money, authoritarian, Curtis Yarvin, Peter Thiel, JD Vance, New Apostolic Reformation, Claremont Institute, techno-authoritarianism"
+}
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=IBM+Plex+Mono:wght@300;400;500&family=Newsreader:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+
+<style>
+:root {
+  --black: #080808;
+  --off-black: #0f0f0f;
+  --dark: #161616;
+  --border: #2a2a2a;
+  --red: #c0392b;
+  --red-light: #e74c3c;
+  --white: #f0ede8;
+  --muted: #999;
+  --warm-gray: #c0bbb3;
+  --gold: #c9a84c;
+  --blue: #3498db;
+  --purple: #9b59b6;
+  --green: #2ecc71;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--black);
+  color: var(--white);
+  font-family: 'Newsreader', Georgia, serif;
+  overflow-x: hidden;
+}
+
+/* NAV */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 48px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(8,8,8,0.97);
+  backdrop-filter: blur(10px);
+}
+nav .logo {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--red-light);
+  font-weight: 500;
+}
+nav ul { display: flex; list-style: none; gap: 36px; }
+nav ul a {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+nav ul a:hover { color: var(--white); }
+
+/* HERO */
+#hero {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 140px 48px 80px;
+  position: relative;
+  border-bottom: 1px solid var(--border);
+  overflow: hidden;
+}
+.hero-grid-bg {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(192,57,43,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(192,57,43,0.05) 1px, transparent 1px);
+  background-size: 60px 60px;
+  animation: gridPulse 8s ease-in-out infinite;
+}
+@keyframes gridPulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.9; }
+}
+.hero-eyebrow {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--red-light);
+  margin-bottom: 28px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  position: relative;
+}
+.hero-eyebrow::before {
+  content: '';
+  display: block;
+  width: 40px;
+  height: 1px;
+  background: var(--red-light);
+}
+#hero h1 {
+  font-family: 'Playfair Display', Georgia, serif;
+  font-size: clamp(64px, 9vw, 130px);
+  font-weight: 900;
+  line-height: 0.88;
+  letter-spacing: -3px;
+  margin-bottom: 40px;
+  max-width: 900px;
+  position: relative;
+}
+#hero h1 em { font-style: italic; color: var(--red-light); }
+.hero-rule {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, var(--red-light), transparent);
+  margin-bottom: 40px;
+}
+.hero-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 40px;
+  max-width: 960px;
+  position: relative;
+}
+.hero-meta-item label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: block;
+  margin-bottom: 8px;
+}
+.hero-meta-item span {
+  font-size: 15px;
+  color: var(--warm-gray);
+  line-height: 1.5;
+}
+.hero-cta {
+  margin-top: 60px;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  position: relative;
+}
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--red);
+  color: var(--white);
+  padding: 16px 32px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+.btn-primary:hover { background: var(--red-light); }
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  color: var(--muted);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: all 0.2s;
+  padding-bottom: 2px;
+}
+.btn-secondary:hover { color: var(--white); border-color: var(--white); }
+
+/* STATS */
+#stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border-bottom: 1px solid var(--border);
+}
+.stat-item {
+  padding: 52px 44px;
+  border-right: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+}
+.stat-item:last-child { border-right: none; }
+.stat-item::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0;
+  width: 0; height: 2px;
+  background: var(--red-light);
+  transition: width 0.5s ease;
+}
+.stat-item:hover::after { width: 100%; }
+.stat-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 60px;
+  font-weight: 900;
+  color: var(--white);
+  line-height: 1;
+  margin-bottom: 10px;
+}
+.stat-num span { color: var(--red-light); }
+.stat-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+/* IDEOLOGY BANNER */
+#ideology-banner {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border-bottom: 1px solid var(--border);
+}
+.ideology-pillar {
+  padding: 44px 40px;
+  border-right: 1px solid var(--border);
+  position: relative;
+}
+.ideology-pillar:last-child { border-right: none; }
+.ideology-pillar::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 3px;
+}
+.pillar-cn::before { background: var(--red-light); }
+.pillar-auth::before { background: var(--gold); }
+.pillar-ta::before { background: var(--blue); }
+.ideology-eyebrow {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+.pillar-cn .ideology-eyebrow { color: var(--red-light); }
+.pillar-auth .ideology-eyebrow { color: var(--gold); }
+.pillar-ta .ideology-eyebrow { color: var(--blue); }
+.ideology-pillar h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 14px;
+  line-height: 1.2;
+}
+.ideology-pillar p {
+  font-size: 14px;
+  line-height: 1.75;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+.ideology-examples {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.ex-tag {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  padding: 2px 8px;
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+
+/* INTRO */
+#intro {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-bottom: 1px solid var(--border);
+}
+.intro-text {
+  padding: 88px 60px 88px 48px;
+  border-right: 1px solid var(--border);
+}
+.section-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--red-light);
+  margin-bottom: 24px;
+}
+.intro-text h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 38px;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 28px;
+}
+.intro-text p {
+  font-size: 18px;
+  line-height: 1.9;
+  color: var(--warm-gray);
+  margin-bottom: 22px;
+}
+.intro-text p strong { color: var(--white); font-weight: 400; }
+.intro-sidebar { padding: 88px 48px; }
+.pull-quote {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: 22px;
+  line-height: 1.5;
+  color: var(--white);
+  border-left: 3px solid var(--red-light);
+  padding-left: 28px;
+  margin-bottom: 36px;
+}
+.pull-quote cite {
+  display: block;
+  margin-top: 12px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: var(--muted);
+  font-style: normal;
+}
+.key-terms {
+  border: 1px solid var(--border);
+  padding: 28px;
+}
+.key-terms h4 {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 20px;
+}
+.term { margin-bottom: 18px; padding-bottom: 18px; border-bottom: 1px solid var(--border); }
+.term:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+.term-name {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  color: var(--gold);
+  margin-bottom: 6px;
+}
+.term-def { font-size: 14px; color: var(--muted); line-height: 1.7; }
+
+.disclaimer {
+  background: rgba(192,57,43,0.08);
+  border: 1px solid rgba(192,57,43,0.2);
+  border-left: 3px solid var(--red);
+  padding: 18px 24px;
+  margin-top: 40px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  line-height: 1.7;
+  color: var(--muted);
+}
+
+/* CLUSTERS */
+#clusters {
+  border-bottom: 1px solid var(--border);
+  padding: 88px 48px;
+}
+#clusters h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 44px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  max-width: 700px;
+  line-height: 1.15;
+}
+#clusters .section-intro {
+  font-size: 17px;
+  color: var(--muted);
+  line-height: 1.8;
+  max-width: 800px;
+  margin-bottom: 52px;
+}
+.cluster-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+}
+.cluster-card {
+  background: var(--off-black);
+  padding: 40px 36px;
+  position: relative;
+  overflow: hidden;
+  transition: background 0.2s;
+}
+.cluster-card:hover { background: var(--dark); }
+.cluster-card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 3px; height: 0;
+  background: var(--accent-col, #e74c3c);
+  transition: height 0.3s;
+}
+.cluster-card:hover::after { height: 100%; }
+.cluster-icon { font-size: 20px; margin-bottom: 20px; }
+.cluster-card h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 14px;
+  line-height: 1.2;
+}
+.cluster-card p { font-size: 14px; line-height: 1.75; color: var(--muted); }
+.cluster-card .orgs { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 6px; }
+.org-tag {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  padding: 3px 9px;
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+
+/* MAP SECTION */
+#map-section { border-bottom: 1px solid var(--border); }
+.map-header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: end;
+  padding: 60px 48px 40px;
+  border-bottom: 1px solid var(--border);
+  gap: 40px;
+}
+.map-header h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 52px;
+  font-weight: 900;
+  line-height: 1;
+}
+.map-instructions {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  line-height: 1.9;
+  color: var(--muted);
+  letter-spacing: 0.3px;
+  text-align: right;
+}
+.map-instructions span {
+  display: block;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--border);
+}
+.map-instructions span:last-child { border-bottom: none; }
+#map-embed {
+  display: block;
+  width: 100%;
+  height: 90vh;
+  background: #0a0a0f;
+  border: none;
+}
+
+/* SOURCES */
+#sources {
+  padding: 88px 48px;
+  border-bottom: 1px solid var(--border);
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 60px;
+}
+#sources h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 38px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.sources-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.source-item {
+  padding: 22px;
+  border: 1px solid var(--border);
+  transition: border-color 0.2s;
+}
+.source-item:hover { border-color: #444; }
+.source-pub {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--red-light);
+  margin-bottom: 8px;
+}
+.source-title { font-size: 14px; line-height: 1.55; color: var(--warm-gray); }
+
+/* METHODOLOGY */
+#methodology {
+  padding: 88px 48px;
+  background: var(--off-black);
+  border-bottom: 1px solid var(--border);
+}
+#methodology .inner { max-width: 760px; }
+#methodology h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 34px;
+  font-weight: 700;
+  margin-bottom: 28px;
+}
+#methodology p { font-size: 16px; line-height: 1.9; color: var(--warm-gray); margin-bottom: 18px; }
+
+/* FOOTER */
+footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 36px 48px;
+  border-top: 1px solid var(--border);
+}
+footer .logo {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--red-light);
+}
+footer p {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 1px;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-up { animation: fadeUp 0.8s ease forwards; }
+.fade-up-1 { animation-delay: 0.1s; opacity: 0; }
+.fade-up-2 { animation-delay: 0.3s; opacity: 0; }
+.fade-up-3 { animation-delay: 0.5s; opacity: 0; }
+.fade-up-4 { animation-delay: 0.65s; opacity: 0; }
+
+@media (max-width: 900px) {
+  #intro, #stats, #sources, #ideology-banner { grid-template-columns: 1fr; }
+  .cluster-grid { grid-template-columns: 1fr; }
+  .sources-grid { grid-template-columns: 1fr; }
+  nav ul { display: none; }
+  #hero, nav, .intro-text, #clusters, #sources, #methodology, footer { padding-left: 20px; padding-right: 20px; }
+  .stat-item { border-right: none; border-bottom: 1px solid var(--border); }
+  .map-header { grid-template-columns: 1fr; }
+  .ideology-pillar { border-right: none; border-bottom: 1px solid var(--border); }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">The Network Exposed</div>
+  <ul>
+    <li><a href="#intro">About</a></li>
+    <li><a href="#ideology-banner">Ideologies</a></li>
+    <li><a href="#clusters">Clusters</a></li>
+    <li><a href="#map-section">Map</a></li>
+    <li><a href="#investigations">Investigations</a></li>
+    <li><a href="#sources">Sources</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-grid-bg"></div>
+  <div class="hero-eyebrow fade-up fade-up-1">Investigative Overview &nbsp;·&nbsp; 2025–2026</div>
+  <h1 class="fade-up fade-up-2">The<br><em>Network</em></h1>
+  <div class="hero-rule fade-up fade-up-3"></div>
+  <div class="hero-meta fade-up fade-up-3">
+    <div class="hero-meta-item">
+      <label>Subject</label>
+      <span>Christian nationalist, authoritarian anti-democratic, and techno-authoritarian organizations driving the Trump administration</span>
+    </div>
+    <div class="hero-meta-item">
+      <label>Scope</label>
+      <span>71 nodes: think tanks, dark money networks, militia groups, Silicon Valley figures, religious orgs, legal infrastructure &amp; political actors</span>
+    </div>
+    <div class="hero-meta-item">
+      <label>Period</label>
+      <span>2015 — Present (primary focus: 2025–26 administration &amp; 2026 midterms)</span>
+    </div>
+  </div>
+  <div class="hero-cta fade-up fade-up-4">
+    <a href="#map-section" class="btn-primary">Explore the Map &rarr;</a>
+    <a href="#intro" class="btn-secondary">Read the Overview &darr;</a>
+  </div>
+</section>
+
+<!-- STATS -->
+<section id="stats">
+  <div class="stat-item">
+    <div class="stat-num">71<span>+</span></div>
+    <div class="stat-label">Organizations<br>&amp; individuals mapped</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num"><span>$</span>1.6<span>B</span></div>
+    <div class="stat-label">Largest single dark<br>money donation (Seid&rarr;Leo)</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">65<span>%</span></div>
+    <div class="stat-label">of Trump's early exec actions<br>mirroring Project 2025</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-num">3</div>
+    <div class="stat-label">Converging authoritarian<br>movements mapped</div>
+  </div>
+</section>
+
+<!-- THREE IDEOLOGIES BANNER -->
+<section id="ideology-banner">
+  <div class="ideology-pillar pillar-cn">
+    <div class="ideology-eyebrow">Movement I</div>
+    <h3>Christian Nationalism</h3>
+    <p>The belief that America was founded as a Christian nation and must be governed by biblical law — using state power to impose religious doctrine on a pluralistic society. Organizations and officials in this cluster explicitly seek to merge church and state, criminalize LGBTQ+ identity, ban abortion, restrict women's autonomy, and dismantle secular public education.</p>
+    <p>Searchable in the map: <strong style="color:var(--red-light)">CHRISTIAN NATIONALIST</strong></p>
+    <div class="ideology-examples">
+      <span class="ex-tag">Heritage Foundation</span>
+      <span class="ex-tag">New Apostolic Reformation</span>
+      <span class="ex-tag">Alliance Defending Freedom</span>
+      <span class="ex-tag">FRC</span>
+      <span class="ex-tag">CREC / Doug Wilson</span>
+      <span class="ex-tag">Hillsdale College</span>
+      <span class="ex-tag">Pete Hegseth</span>
+      <span class="ex-tag">Josh Hawley</span>
+    </div>
+  </div>
+  <div class="ideology-pillar pillar-auth">
+    <div class="ideology-eyebrow">Movement II</div>
+    <h3>Authoritarian Anti-Democracy</h3>
+    <p>Intellectuals, think tanks, and officials openly theorizing the replacement of democratic governance with authoritarian rule — through executive seizure, judicial capture, election nullification, and mass purges of civil servants. This is not mere policy preference: it is a documented project to make electoral outcomes irrelevant to who holds power.</p>
+    <p>Searchable in the map: <strong style="color:var(--gold)">ANTI-DEMOCRATIC</strong></p>
+    <div class="ideology-examples">
+      <span class="ex-tag">Claremont Institute</span>
+      <span class="ex-tag">Center for Renewing America</span>
+      <span class="ex-tag">John Eastman</span>
+      <span class="ex-tag">Charles Haywood / SACR</span>
+      <span class="ex-tag">Project 2025</span>
+      <span class="ex-tag">Leonard Leo</span>
+      <span class="ex-tag">Proud Boys</span>
+      <span class="ex-tag">Oath Keepers</span>
+    </div>
+  </div>
+  <div class="ideology-pillar pillar-ta">
+    <div class="ideology-eyebrow">Movement III</div>
+    <h3>Techno-Authoritarianism</h3>
+    <p>A distinct Silicon Valley-originated pipeline: Curtis Yarvin's Dark Enlightenment philosophy — that democracy is failed software to be replaced by CEO-dictatorship — channeled through Peter Thiel's funding and mentorship directly into the White House via JD Vance. Yarvin's 2012 "RAGE" plan (mass-fire all government employees, replace with loyalists) is what DOGE is doing right now.</p>
+    <p>Searchable in the map: <strong style="color:var(--blue)">TECHNO-AUTHORITARIAN</strong></p>
+    <div class="ideology-examples">
+      <span class="ex-tag">Curtis Yarvin</span>
+      <span class="ex-tag">Peter Thiel</span>
+      <span class="ex-tag">JD Vance</span>
+      <span class="ex-tag">Michael Anton</span>
+      <span class="ex-tag">Dark Enlightenment / NRx</span>
+      <span class="ex-tag">Palantir</span>
+    </div>
+  </div>
+</section>
+
+<!-- INTRO -->
+<section id="intro">
+  <div class="intro-text">
+    <div class="section-label">Overview</div>
+    <h2>Three converging movements. One power structure.</h2>
+    <p>What is reshaping the United States government in 2025 is not a single ideology or a fringe phenomenon. It is the convergence of <strong>three distinct but overlapping authoritarian movements</strong> — Christian nationalism, anti-democratic legal-intellectual infrastructure, and Silicon Valley techno-authoritarianism — united by shared personnel, funding, and the vehicle of the second Trump administration.</p>
+    <p>Christian nationalists want a government that enforces biblical law. Anti-democratic theorists at Claremont and the Heritage Foundation want a permanent executive seizure that makes electoral majorities irrelevant. Techno-authoritarians like Curtis Yarvin and Peter Thiel want to replace democratic governance with corporate CEO-dictatorship. These are not the same project — but they are cooperating, and the result is what we are watching unfold.</p>
+    <p>The connective tissue is <strong>money, personnel, and institutional infrastructure</strong>. Leonard Leo's $1.6B dark money empire funds the legal scaffolding. Heritage Foundation wrote the blueprint. Thiel funded the VP. Yarvin's RAGE plan became DOGE. And January 6 was not an aberration — it was the first armed manifestation of this convergence, organized by NAR-affiliated prayer groups, executed by militia networks, and enabled by Claremont-adjacent legal theory.</p>
+    <p>This map documents those connections as publicly known: financial flows, board memberships, personnel overlaps, and formal partnerships. Every node is sourced. Every connection documented.</p>
+    <div class="disclaimer"><strong>Note:</strong> All connections shown are documented through financial relationships, formal partnerships, board overlaps, or confirmed personnel ties based on public reporting, IRS filings, and court records. Ideological alignment alone is not treated as a connection.</div>
+  </div>
+  <div class="intro-sidebar">
+    <div class="pull-quote">"We are in the process of the second American Revolution, which will remain bloodless if the left allows it to be."<cite>— Kevin Roberts, President, Heritage Foundation</cite></div>
+    <div class="pull-quote">"If Americans want to change their government, they're going to have to get over their dictator phobia."<cite>— Curtis Yarvin, 2012 — now JD Vance's acknowledged influence</cite></div>
+    <div class="pull-quote">"The NAR is the backbone of Christian Trumpism."<cite>— Matthew D. Taylor, scholar, on the movement that organized January 6</cite></div>
+    <div class="key-terms">
+      <h4>Key Terms</h4>
+      <div class="term"><div class="term-name">Christian Nationalism</div><div class="term-def">The belief that the US was founded as and must be governed as a Christian nation — used to justify state enforcement of religious doctrine, stripping rights from religious minorities, LGBTQ+ people, and women.</div></div>
+      <div class="term"><div class="term-name">Techno-Authoritarianism / Dark Enlightenment</div><div class="term-def">Curtis Yarvin's neo-reactionary philosophy: democracy is failed software. Governments should be run as corporations by CEO-dictators. JD Vance has cited Yarvin by name. Peter Thiel funded him. DOGE is executing his RAGE plan.</div></div>
+      <div class="term"><div class="term-name">Project 2025</div><div class="term-def">The Heritage Foundation's 900-page executive branch takeover blueprint. Over 100 organizations contributed. ~65% of proposals already implemented by late 2025.</div></div>
+      <div class="term"><div class="term-name">Dark Money</div><div class="term-def">Political spending by nonprofits not required to disclose donors. Leonard Leo's network controls $1.6B+, flowing through Marble Freedom Trust, the 85 Fund, DonorsTrust, and dozens of downstream organizations.</div></div>
+      <div class="term"><div class="term-name">Dominionism / Seven Mountain Mandate</div><div class="term-def">NAR theology that Christians must seize "dominion" over all seven societal "mountains": government, business, education, religion, arts, entertainment, and family. The theological framework behind January 6 and the Faith Office.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- CLUSTERS -->
+<section id="clusters">
+  <div class="section-label">Network Clusters</div>
+  <h2>Seven interlocking centers of power</h2>
+  <p class="section-intro">These clusters are not isolated — they share personnel, funding, and strategy. The same individuals appear across multiple clusters. The same dark money flows through all of them. Search any cluster's key term in the interactive map to isolate and highlight all connected nodes simultaneously.</p>
+  <div class="cluster-grid">
+    <div class="cluster-card" style="--accent-col:#e74c3c">
+      <div class="cluster-icon">🏛️</div>
+      <h3>The Administration</h3>
+      <p>Key officials — Vought, Miller, Hegseth, Vance — are not merely sympathetic to these movements; they emerged directly from them. Vought ran the Center for Renewing America. Miller founded America First Legal. Hegseth was a Fox News NAR-aligned commentator. Vance was Thiel's protégé and cites Yarvin by name.</p>
+      <div class="orgs"><span class="org-tag">Trump WH</span><span class="org-tag">OMB (Vought)</span><span class="org-tag">DOD (Hegseth)</span><span class="org-tag">DOJ (Bondi)</span><span class="org-tag">Faith Office</span></div>
+    </div>
+    <div class="cluster-card" style="--accent-col:#3498db">
+      <div class="cluster-icon">📋</div>
+      <h3>The Policy Factories</h3>
+      <p>Think tanks that produced the intellectual infrastructure: the legal theories, the personnel pipelines, the executive orders, and the anti-democratic frameworks. Claremont's "Red Caesar" theory and Heritage's Project 2025 are both being implemented simultaneously.</p>
+      <div class="orgs"><span class="org-tag">Heritage Foundation</span><span class="org-tag">Claremont Institute</span><span class="org-tag">Center for Renewing America</span><span class="org-tag">AFPI</span><span class="org-tag">Hillsdale</span></div>
+    </div>
+    <div class="cluster-card" style="--accent-col:#f1c40f">
+      <div class="cluster-icon">💰</div>
+      <h3>The Dark Money Empire</h3>
+      <p>Leonard Leo's network is the financial engine. A $1.6B donation from Barre Seid seeded the Marble Freedom Trust, flowing through the 85 Fund, DonorsTrust, and the Teneo Network to dozens of downstream organizations — all without public disclosure of the original source.</p>
+      <div class="orgs"><span class="org-tag">Marble Freedom Trust</span><span class="org-tag">85 Fund</span><span class="org-tag">DonorsTrust</span><span class="org-tag">Federalist Society</span><span class="org-tag">Koch Network</span></div>
+    </div>
+    <div class="cluster-card" style="--accent-col:#9b59b6">
+      <div class="cluster-icon">⚖️</div>
+      <h3>The Legal Infrastructure</h3>
+      <p>Organizations that captured the judiciary over decades and now use litigation as a political weapon. The Federalist Society provided judges; ADF drafted model abortion bans; America First Legal attacks voting rights; the Judicial Crisis Network ran dark money campaigns for each Supreme Court confirmation.</p>
+      <div class="orgs"><span class="org-tag">Alliance Defending Freedom</span><span class="org-tag">America First Legal</span><span class="org-tag">Judicial Crisis Network</span><span class="org-tag">Federalist Society</span></div>
+    </div>
+    <div class="cluster-card" style="--accent-col:#2ecc71">
+      <div class="cluster-icon">✝️</div>
+      <h3>The Religious Networks</h3>
+      <p>The spiritual legitimacy layer. The New Apostolic Reformation organized the Jericho Marches that directly preceded January 6; four of the six protest permits that day went to NAR-affiliated groups. NAR apostles met at the White House eight days before the attack. Doug Wilson preached at the Pentagon at Hegseth's invitation in February 2026.</p>
+      <div class="orgs"><span class="org-tag">New Apostolic Reformation</span><span class="org-tag">White House Faith Office</span><span class="org-tag">CREC / Doug Wilson</span><span class="org-tag">Theo Bros</span><span class="org-tag">Focus on the Family</span></div>
+    </div>
+    <div class="cluster-card" style="--accent-col:#e67e22">
+      <div class="cluster-icon">📣</div>
+      <h3>The Ground Game &amp; Militia Networks</h3>
+      <p>Organizations that mobilize voters, recruit youth, and — in the case of the militia wing — provided the armed foot soldiers of January 6. The Proud Boys, Oath Keepers, and Three Percenters operated in documented alliance during the Capitol attack. All defendants were pardoned on Trump's inauguration day 2025.</p>
+      <div class="orgs"><span class="org-tag">TPUSA</span><span class="org-tag">Moms for Liberty</span><span class="org-tag">CPI</span><span class="org-tag">Proud Boys</span><span class="org-tag">Oath Keepers</span><span class="org-tag">Three Percenters</span></div>
+    </div>
+    <div class="cluster-card" style="--accent-col:#3498db">
+      <div class="cluster-icon">💻</div>
+      <h3>The Techno-Authoritarian Pipeline</h3>
+      <p>A distinct but converging ideological strand. Curtis Yarvin's Dark Enlightenment philosophy — that democracy is failed software requiring a CEO-dictator — was funded by Peter Thiel, who then groomed JD Vance as his political vehicle, investing $15M in Vance's Senate race and lobbying Trump to make him VP. Yarvin attended Trump's inaugural gala as "informal guest of honor." DOGE is his RAGE plan.</p>
+      <div class="orgs"><span class="org-tag">Curtis Yarvin</span><span class="org-tag">Peter Thiel</span><span class="org-tag">JD Vance</span><span class="org-tag">Michael Anton</span><span class="org-tag">Palantir</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- MAP SECTION -->
+<section id="map-section">
+  <div class="map-header">
+    <div>
+      <div class="section-label">Interactive Visualization</div>
+      <h2>Explore the Full Network</h2>
+    </div>
+    <div class="map-instructions">
+      <span>🔍 Search "CHRISTIAN NATIONALIST" — see the religious cluster</span>
+      <span>🔍 Search "TECHNO-AUTHORITARIAN" — see the Silicon Valley pipeline</span>
+      <span>🔍 Search "JANUARY 6" — see who organized the attack</span>
+      <span>🖱 Click any node — read full sourced profile</span>
+      <span>⬤ Filter buttons — isolate categories</span>
+      <span>⊕ Scroll / pinch to zoom</span>
+    </div>
+  </div>
+  <iframe src="map.html" id="map-embed" frameborder="0" allowfullscreen></iframe>
+</section>
+
+<!-- SOURCES -->
+<section id="sources">
+  <h2>Sources &amp;<br>References</h2>
+  <div class="sources-grid">
+    <div class="source-item"><div class="source-pub">ProPublica</div><div class="source-title">Leonard Leo's Dark Money Empire: $1.6B donation, network structure, and judicial influence</div></div>
+    <div class="source-item"><div class="source-pub">The Guardian / Reuters</div><div class="source-title">Project 2025 tracking: Executive actions matched to Heritage Foundation blueprint proposals</div></div>
+    <div class="source-item"><div class="source-pub">Washington Post</div><div class="source-title">Russell Vought, Center for Renewing America, and the architecture of executive power seizure</div></div>
+    <div class="source-item"><div class="source-pub">New York Times / CNN</div><div class="source-title">Curtis Yarvin: Dark Enlightenment philosophy, DOGE parallels, and influence on the Trump administration</div></div>
+    <div class="source-item"><div class="source-pub">NPR / Baptist News / Slate</div><div class="source-title">New Apostolic Reformation: January 6 organization, Jericho Marches, and White House meetings</div></div>
+    <div class="source-item"><div class="source-pub">The New Republic / The Contrarian</div><div class="source-title">Peter Thiel: JD Vance mentorship, Yarvin funding, Palantir government contracts</div></div>
+    <div class="source-item"><div class="source-pub">IRS / Open 990</div><div class="source-title">Tax filings: SACR formation, Claremont donations, DonorsTrust disbursements, 85 Fund flows</div></div>
+    <div class="source-item"><div class="source-pub">SPLC / Documented / DOJ</div><div class="source-title">Proud Boys, Oath Keepers, Three Percenters: seditious conspiracy convictions, January 6 role, Trump pardons</div></div>
+    <div class="source-item"><div class="source-pub">Heritage Foundation</div><div class="source-title">Mandate for Leadership: The Conservative Promise (Project 2025 document, 2023)</div></div>
+    <div class="source-item"><div class="source-pub">Rolling Stone / Vice / GPAE</div><div class="source-title">Charles Haywood, SACR, and the paramilitary fringe of the Christian nationalist movement</div></div>
+  </div>
+</section>
+
+<!-- METHODOLOGY -->
+<section id="methodology">
+  <div class="inner">
+    <div class="section-label">Methodology</div>
+    <h2>How This Was Built</h2>
+    <p>This network map was built from publicly available reporting, nonprofit tax disclosures (Form 990s), court documents, congressional testimony, and organizational self-disclosures. A connection is drawn between two nodes only when a concrete, documented relationship exists — a financial transfer, a formal board or advisory membership, a partnership agreement, or confirmed shared personnel.</p>
+    <p>Ideological alignment alone is not treated as a connection. Two organizations may share the same worldview and not be linked if no concrete institutional tie has been documented. Node sizes reflect organizational influence and centrality within the network as assessed from the public reporting record.</p>
+    <p>Each node description includes searchable ideological flags: <strong>CHRISTIAN NATIONALIST</strong> for organizations explicitly advancing theocratic governance; <strong>ANTI-DEMOCRATIC</strong> for documented anti-democratic positions or actions; and <strong>TECHNO-AUTHORITARIAN</strong> for the neo-reactionary Silicon Valley strand. Use the map's search function to isolate and visualize any of these clusters.</p>
+  </div>
+</section>
+
+
+<!-- INVESTIGATIONS -->
+<section id="investigations" style="padding: 80px 60px; border-top: 1px solid var(--border);">
+  <div style="max-width: 960px; margin: 0 auto;">
+    <div style="font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--red); margin-bottom: 12px;">Investigations</div>
+    <h2 style="font-size: 2rem; font-weight: 700; color: var(--white); margin-bottom: 8px; line-height: 1.2;">Published Analysis</h2>
+    <p style="color: var(--muted); font-size: 0.95rem; margin-bottom: 48px; max-width: 600px;">Long-form investigative pieces and live analytical trackers drawn from the network map research.</p>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+
+      <!-- Epic Fury card -->
+      <a href="/epic-fury.html" style="text-decoration:none; display:block; background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 28px; transition: border-color 0.2s;" onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor='var(--border)'">
+        <div style="font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--red); margin-bottom: 10px;">Live Tracker · Day 27</div>
+        <div style="font-size: 1.15rem; font-weight: 700; color: var(--white); margin-bottom: 10px; line-height: 1.3;">Operation Epic Fury: Iran War Probability Matrix</div>
+        <div style="font-size: 0.85rem; color: var(--muted); line-height: 1.6; margin-bottom: 16px;">Real-time OSINT probability analysis of the Iran war scenario. 54+ variables tracked across military, regional, nuclear, cyber, economic, and political categories. Updated daily.</div>
+        <div style="font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--red);">Open Tracker &#8594;</div>
+      </a>
+
+      <!-- Heritage Blueprint card -->
+      <a href="/heritage-family-blueprint.html" style="text-decoration:none; display:block; background: rgba(255,255,255,0.03); border: 1px solid var(--border); padding: 28px; transition: border-color 0.2s;" onmouseover="this.style.borderColor='var(--red)'" onmouseout="this.style.borderColor='var(--border)'">
+        <div style="font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); margin-bottom: 10px;">Investigation</div>
+        <div style="font-size: 1.15rem; font-weight: 700; color: var(--white); margin-bottom: 10px; line-height: 1.3;">The Heritage Family Blueprint: Project 2025 and the Architecture of Control</div>
+        <div style="font-size: 0.85rem; color: var(--muted); line-height: 1.6; margin-bottom: 16px;">Deep-dive investigation into the Heritage Foundation's 900-page executive branch takeover plan, the organizations behind it, and how much has already been implemented.</div>
+        <div style="font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gold);">Read Investigation &#8594;</div>
+      </a>
+
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="logo">The Network — 2025–2026</div>
+  <p>Built with D3.js &nbsp;·&nbsp; Data from public reporting and IRS disclosures &nbsp;·&nbsp; 77+ nodes, 175+ connections</p>
+</footer>
+
+</body>
+</html>
